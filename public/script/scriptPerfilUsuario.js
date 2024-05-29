@@ -59,45 +59,62 @@ function cargarPublicacionesDeUsuario(username) {
 
                     var likesLabel = $('<div>', {
                         'class': 'likes-label',
-                        'text': `${publicacion.meGustas} Me gusta`
+                        'text': `${publicacion.meGustas.length} Me gusta` // Mostrar la longitud del array
                     });
 
-                    var likeButton = $('<button>', {
-                        'class': 'like-button',
-                        'html': '<img src="/images/me-gusta.png" alt="Me gusta">'
-                    }).on('click', function() {
-                        addLike(publicacion._id);
-                    });
-
-                    var commentButton = $('<button>', {
-                        'class': 'comment-button',
-                        'html': '<img src="/images/comente.png" alt="Comentar">'
-                    }).on('click', function() {
-                        var comentarioTexto = prompt('Introduce tu comentario:');
-                        if (comentarioTexto) {
-                            addComment(publicacion._id, comentarioTexto);
-                        }
-                    });
-
-                    var commentsContainer = $('<div>', {
-                        'class': 'comments-container'
-                    });
-
-                    $.each(publicacion.comentarios, function(index, comentario) {
-                        var commentElement = $('<div>', {
-                            'class': 'comment',
-                            'text': `@${comentario.usuario}: ${comentario.texto}`
+                    // Uso de la función showLike para obtener el HTML del botón de me gusta
+                    showLike(publicacion._id).then(likeButtonHtml => {
+                        var likeButton = $('<button>', {
+                            'class': 'like-button',
+                            'html': likeButtonHtml,
+                            'click': function() {
+                                addLike(publicacion._id);
+                            }
                         });
-                        commentsContainer.append(commentElement);
+
+                        var commentButton = $('<button>', {
+                            'class': 'comment-button',
+                            'html': '<img src="/images/comente.png" alt="Comentar">'
+                        }).on('click', function() {
+                            var comentarioTexto = prompt('Introduce tu comentario:');
+                            if (comentarioTexto) {
+                                addComment(publicacion._id, comentarioTexto);
+                            }
+                        });
+
+                        var commentsContainer = $('<div>', {
+                            'class': 'comments-container'
+                        });
+
+                        $.each(publicacion.comentarios, function(index, comentario) {
+                            var commentElement = $('<div>', {
+                                'class': 'comment'
+                            });
+
+                            var userElement = $('<span>', {
+                                'class': 'comment-user',
+                                'html': `<strong>@${comentario.usuario}</strong>` // Usuario en negrita
+                            });
+
+                            var textElement = $('<span>', {
+                                'class': 'comment-text',
+                                'text': `: ${comentario.texto}`
+                            });
+
+                            commentElement.append(userElement).append(textElement);
+                            commentsContainer.append(commentElement);
+                        });
+
+                        imgContainer.append(imgElement)
+                            .append(likesLabel)
+                            .append(likeButton)
+                            .append(commentButton)
+                            .append(commentsContainer);
+
+                        galeria.append(imgContainer);
+                    }).catch(error => {
+                        console.error('Error al obtener el botón de me gusta:', error);
                     });
-
-                    imgContainer.append(imgElement)
-                        .append(likesLabel)
-                        .append(likeButton)
-                        .append(commentButton)
-                        .append(commentsContainer);
-
-                    galeria.append(imgContainer);
                 });
 
             } else {
@@ -107,6 +124,30 @@ function cargarPublicacionesDeUsuario(username) {
         error: function (error) {
             console.error('Error al cargar las imágenes del usuario:', error);
         }
+    });
+}
+
+function showLike(publicacionId) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            type: 'POST',
+            url: '/me-gusta-o-no',
+            data: JSON.stringify({ publicacionId: publicacionId }),
+            contentType: 'application/json',
+            success: function(response) {
+                var likeButtonHtml;
+                if (response.status) {
+                    likeButtonHtml = '<img src="/images/me-gusta.png" alt="Me gusta">';
+                } else {
+                    likeButtonHtml = '<img src="/images/me-gusta2.png" alt="No me gusta">';
+                }
+                resolve(likeButtonHtml);
+            },
+            error: function(error) {
+                console.error('Error al verificar "me gusta":', error);
+                reject(error);
+            }
+        });
     });
 }
 
