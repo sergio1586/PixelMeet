@@ -64,7 +64,7 @@ body {
     background-color: #fff;
 }
 
-.image-container img {
+.image-container img.feed-img {
     width: 100%;
     height: auto;
 }
@@ -167,4 +167,37 @@ body {
     cursor: pointer;
     display: block;
     margin-top: 5px;
+}
+
+.comment-container {
+    display: flex;
+    align-items: center;
+    margin: 10px;
+}
+
+.comment-box {
+    flex: 1;
+    margin: -10px;
+   
+    border: none;
+    border-bottom: 1px solid #dbdbdb;
+    border-radius: 0;
+    resize: none;
+    font-size: 14px;
+}
+
+.comment-submit-button {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.submit-button-image {
+    margin: 5px;
+    width: 24px; /* Ajusta el tamaño según sea necesario */
+    height: 24px; /* Ajusta el tamaño según sea necesario */
 }

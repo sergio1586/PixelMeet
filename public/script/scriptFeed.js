@@ -52,7 +52,7 @@ function cargarFeed() {
                     
                             var verMasButton = $('<button>', {
                                 'text': 'Ver más',
-                                'style': 'background: none; border: none; color: blue; text-decoration: underline; cursor: pointer;',
+                                'class': 'ver-mas-button',
                                 'click': function(e) {
                                     e.preventDefault();
                                     toggleDescription(descripcionDiv, verMasButton, shortText, fullText, isShort).then(updatedState => {
@@ -129,12 +129,43 @@ function cargarFeed() {
                         $.each(publicacion.comentarios, function(index, comentario) {
                             var commentElement = $('<div>', {
                                 'class': 'comment',
-                                'text': `@${comentario.usuario}: ${comentario.texto}`
+                                'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
                             });
                             commentsContainer.append(commentElement);
                         });
+                        
+                        
+                        // Caja de texto para comentarios
+                        var commentBox = $('<textarea>', {
+                            'class': 'comment-box',
+                            'placeholder': 'Añade un comentario...'
+                        });
 
-                        imgContainer.append(imgElement)
+                        var commentSubmitButton = $('<button>', {
+                            'class': 'comment-submit-button',
+                            'click': function() {
+                                var comentarioTexto = commentBox.val();
+                                if (comentarioTexto) {
+                                    addComment(publicacion._id, comentarioTexto);
+                                }
+                            }
+                        });
+
+                        var submitButtonImage = $('<img>', {
+                            'src': 'images/enviar.png',
+                            'alt': 'Enviar',
+                            'class': 'submit-button-image' // Añade una clase para poder aplicarle estilos si es necesario
+                        });
+
+                        commentSubmitButton.append(submitButtonImage);
+
+                        var commentContainer = $('<div>', {
+                            'class': 'comment-container'
+                        });
+
+                        commentContainer.append(commentBox).append(commentSubmitButton);
+
+                        imgContainer.append(imgElement.addClass('feed-img'))
                             .append(userLabel)
                             .append(descripcionDiv)
                             .append(likesLabel)
@@ -143,9 +174,12 @@ function cargarFeed() {
                             .append(followButton)
                             .append(unfollowButton)
                             .append(deleteButton)
-                            .append(commentsContainer);
+                            .append(commentsContainer)
+                            .append(commentContainer);
 
                         feed.append(imgContainer);
+
+
                     }).catch(error => {
                         console.error('Error al obtener el botón de me gusta:', error);
                     });
@@ -159,6 +193,8 @@ function cargarFeed() {
         }
     });
 }
+
+
 function subirImagen() {
     const fileInput = document.getElementById('inputImagen');
     const descripcion = document.getElementById('inputDescripcion');
@@ -254,7 +290,7 @@ function addComment(publicacionId, texto) {
         data: JSON.stringify({ publicacionId: publicacionId, texto: texto }),
         contentType: 'application/json',
         success: function(response) {
-            alert(response.message);
+            //alert(response.message);
             cargarFeed(); // Recargar el feed para mostrar el nuevo comentario
         },
         error: function(error) {
