@@ -118,8 +118,7 @@ app.get('/cargarFeed', auth, async (req, res) => {
                     imagePath: imagePath,
                     meGustas: publicacion.meGustas,
                     comentarios: publicacion.comentarios,
-                    //AÑADO EL ATRIBUTO DESCRIPCIÓN QUE TU NO LO TENÍAS
-                    descripcion: publicacion.descripcion
+                    descripcion: publicacion.descripcion // Añadido el atributo descripción
                 });
             });
         });
@@ -130,6 +129,7 @@ app.get('/cargarFeed', auth, async (req, res) => {
         res.status(500).json({ error: 'Error del servidor' });
     }
 });
+
 //CREO QUE ESTO ES PARA LAS PUBLICACION EN EL PERFIL ASI QUE ALOMEJOR HAY QUE AÑADIR LA "DESCRIPCIÓN" DE LA FOTO.
 app.get('/publicaciones-usuario', auth, async (req, res) => {
     try {
@@ -393,21 +393,25 @@ app.post('/comentario', auth, async (req, res) => {
             return res.status(404).json({ message: 'Publicación no encontrada' });
         }
 
-        publicacion.comentarios.push({
+        const nuevoComentario = {
             usuario: req.session.user,
             texto: texto,
             fecha: new Date()
-        });
+        };
+
+        publicacion.comentarios.push(nuevoComentario);
 
         await usuario.save();
 
-        res.status(200).json({ message: 'Comentario añadido correctamente' });
+        res.status(200).json({ message: 'Comentario añadido correctamente', usuario: req.session.user });
     } catch (error) {
         console.error('Error al añadir comentario:', error);
         res.status(500).json({ message: 'Error del servidor' });
     }
 });
+
 //LA FUNCIÓN ME GUSTA, LA DEJO ENTERA LA MÍA DIGO
+// Ruta para añadir un "me gusta" a una publicación
 // Ruta para añadir un "me gusta" a una publicación
 app.post('/me-gusta', auth, async (req, res) => {
     try {
@@ -434,12 +438,12 @@ app.post('/me-gusta', auth, async (req, res) => {
             // No ha dado "me gusta", añadirlo
             publicacion.meGustas.push(usernick);
             await usuario.save();
-            res.status(200).json({ status: true, message: 'Me gusta añadido correctamente' });
+            res.status(200).json({ success: true, liked: true, likesCount: publicacion.meGustas.length });
         } else {
             // Ya ha dado "me gusta", eliminarlo
             publicacion.meGustas.splice(meGustaIndex, 1);
             await usuario.save();
-            res.status(200).json({ status: false, message: 'Me gusta eliminado correctamente' });
+            res.status(200).json({ success: true, liked: false, likesCount: publicacion.meGustas.length });
         }
 
     } catch (error) {
@@ -447,6 +451,8 @@ app.post('/me-gusta', auth, async (req, res) => {
         res.status(500).json({ message: 'Error del servidor' });
     }
 });
+
+
 //ESTA FUNCIÓN TU NO LA TENÍAS
 app.post('/me-gusta-o-no', auth, async (req, res) => {
     try {

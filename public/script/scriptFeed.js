@@ -8,20 +8,49 @@ function cargarFeed() {
         url: '/cargarFeed',
         success: function(response) {
             if (response && response.publicaciones && response.publicaciones.length > 0) {
-                var feed = $('#feed'); // Selecciona el contenedor con jQuery
-                feed.empty(); // Limpia el contenido existente
+                var feed = $('#feed');
+                feed.empty();
 
                 $.each(response.publicaciones, function(index, publicacion) {
                     const imgContainer = $('<div>', {
                         'class': 'image-container',
-                        'style': 'position: relative; margin: 10px auto;'
+                        'style': 'position: relative; margin: 10px auto;',
+                        'data-publicacion-id': publicacion._id
                     });
 
                     var imgElement = $('<img>', {
                         src: `/${publicacion.imagePath}`,
                         'class': 'feed-img',
                         'click': function() {
-                            $('#modalImage').attr('src', `/${publicacion.imagePath}`);
+                            $('#modalImage').attr('src', `/${publicacion.imagePath}`).data('publicacion-id', publicacion._id);
+                            $('#modalUserProfilePic').attr('src', `/${publicacion.imagenPerfil}`);
+                            $('#modalUserProfileLink').attr('href', `/perfil/${publicacion.username}`).text(`@${publicacion.username}`);
+                            $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion}`);
+                            $('#modalComments').empty();
+                            $.each(publicacion.comentarios, function(index, comentario) {
+                                var commentElement = $('<div>', {
+                                    'class': 'comment',
+                                    'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+                                });
+                                $('#modalComments').append(commentElement);
+                            });
+                            $('#modalCommentBox').val('');
+                            showLike(publicacion._id).then(likeButtonHtml => {
+                                $('#modalLikeButton').html(likeButtonHtml);
+                                $('#modalLikeButton').off('click').on('click', function() {
+                                    toggleLike(publicacion._id);
+                                });
+                            });
+                    
+                            // Configurar el botón de envío de comentarios en el modal
+                            $('#modalCommentSubmitButton').off('click').on('click', function() {
+                                var comentarioTexto = $('#modalCommentBox').val();
+                                if (comentarioTexto) {
+                                    addComment(publicacion._id, comentarioTexto);
+                                    $('#modalCommentBox').val(''); // Limpiar la caja de comentarios
+                                }
+                            });
+                    
                             $('#imageModal').modal('show');
                         }
                     });
@@ -46,10 +75,10 @@ function cargarFeed() {
                         var shortText = `<strong>${publicacion.username}</strong> ${publicacion.descripcion.substring(0, 100)}... `;
                         var fullText = `<strong>${publicacion.username}</strong> ${publicacion.descripcion}`;
                         var isShort = true;
-                    
+
                         if (publicacion.descripcion.length > 100) {
                             descripcionDiv.html(shortText);
-                    
+
                             var verMasButton = $('<button>', {
                                 'text': 'Ver más',
                                 'class': 'ver-mas-button',
@@ -60,7 +89,7 @@ function cargarFeed() {
                                     });
                                 }
                             });
-                    
+
                             descripcionDiv.append(verMasButton);
                         } else {
                             descripcionDiv.html(fullText);
@@ -68,20 +97,18 @@ function cargarFeed() {
                     } else {
                         descripcionDiv.html(`<strong>${publicacion.username}</strong>`);
                     }
-                    
 
                     var likesLabel = $('<div>', {
                         'class': 'likes-label',
-                        'text': `${publicacion.meGustas} Me gusta`
+                        'text': `${publicacion.meGustas.length} Me gusta`
                     });
 
-                    // Uso de la función showLike para obtener el HTML del botón de me gusta
                     showLike(publicacion._id).then(likeButtonHtml => {
                         var likeButton = $('<button>', {
                             'class': 'like-button',
                             'html': likeButtonHtml,
                             'click': function() {
-                                addLike(publicacion._id);
+                                toggleLike(publicacion._id);
                             }
                         });
 
@@ -133,9 +160,7 @@ function cargarFeed() {
                             });
                             commentsContainer.append(commentElement);
                         });
-                        
-                        
-                        // Caja de texto para comentarios
+
                         var commentBox = $('<textarea>', {
                             'class': 'comment-box',
                             'placeholder': 'Añade un comentario...'
@@ -154,7 +179,7 @@ function cargarFeed() {
                         var submitButtonImage = $('<img>', {
                             'src': 'images/enviar.png',
                             'alt': 'Enviar',
-                            'class': 'submit-button-image' // Añade una clase para poder aplicarle estilos si es necesario
+                            'class': 'submit-button-image'
                         });
 
                         commentSubmitButton.append(submitButtonImage);
@@ -179,7 +204,6 @@ function cargarFeed() {
 
                         feed.append(imgContainer);
 
-
                     }).catch(error => {
                         console.error('Error al obtener el botón de me gusta:', error);
                     });
@@ -193,18 +217,31 @@ function cargarFeed() {
         }
     });
 }
-
+function toggleLike(publicacionId) {
+    $.ajax({
+        type: 'POST',
+        url: '/me-gusta',
+        data: JSON.stringify({ publicacionId: publicacionId }),
+        contentType: 'application/json',
+        success: function(response) {
+            
+                showLike(publicacionId);
+            
+        },
+        error: function(error) {
+            console.error('Error al gestionar "me gusta":', error);
+        }
+    });
+}
 
 function subirImagen() {
     const fileInput = document.getElementById('inputImagen');
     const descripcion = document.getElementById('inputDescripcion');
-    //AÑADO CATEGORIA
     const categoriaInput = document.getElementById('categoria');
     const formData = new FormData();
     formData.append('imagen', fileInput.files[0]);
-    formData.append('descripcion', descripcion.value); 
+    formData.append('descripcion', descripcion.value);
     formData.append('categoria', categoriaInput.value);
-
 
     $.ajax({
         type: 'POST',
@@ -212,17 +249,16 @@ function subirImagen() {
         data: formData,
         contentType: false,
         processData: false,
-        success: function (response) {
+        success: function(response) {
             console.log('Imagen subida correctamente');
             console.log('Ruta de la imagen:', response.imagePath);
             alert('Imagen subida correctamente');
 
-            // Cerrar el modal después de la subida exitosa
             $('#uploadModal').modal('hide');
             cargarPublicacionesUsuario();
-            cargarPerfil(); // Actualizar datos del perfil después de subir la imagen
+            cargarPerfil();
         },
-        error: function (error) {
+        error: function(error) {
             console.error('Error al subir la imagen:', error);
         }
     });
@@ -239,6 +275,7 @@ function toggleDescription(descripcionDiv, verMasButton, shortText, fullText, is
         }
     });
 }
+
 function addLike(publicacionId) {
     $.ajax({
         type: 'POST',
@@ -246,18 +283,56 @@ function addLike(publicacionId) {
         data: JSON.stringify({ publicacionId: publicacionId }),
         contentType: 'application/json',
         success: function(response) {
-            if (response.status) {
-                console.log(response.status);
+            console.log(response); // Ver la respuesta del servidor
+            var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
+            var likeButton = publicacionContainer.find('.like-button');
+            var likesLabel = publicacionContainer.find('.likes-label');
+
+            // Actualizar el botón de "me gusta" en el feed
+            if (!response.status) {
+                likeButton.html('<img src="/images/me-gusta.png" alt="Me gusta">');
             } else {
-                console.log(response.status);
+                likeButton.html('<img src="/images/me-gusta2.png" alt="Me gusta">');
             }
-            cargarFeed(); // Recargar el feed para actualizar el número de "me gusta"
+
+            // Actualizar el conteo de "me gusta"
+            likesLabel.text(`${response.likesCount} Me gusta`);
+
+            // Reasignar el evento de clic al botón de "me gusta" en el feed
+            likeButton.off('click').on('click', function() {
+                addLike(publicacionId);
+            });
+
+            // Actualizar el botón de "me gusta" en el modal si está visible
+            if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
+                var modalLikeButton = $('#modalLikeButton');
+                var modalLikesLabel = $('#modalLikesLabel');
+
+                if (response.status) {
+                    modalLikeButton.html('<img src="/images/me-gusta.png" alt="Me gusta">');
+                } else {
+                    modalLikeButton.html('<img src="/images/me-gusta2.png" alt="Me gusta">');
+                }
+
+                modalLikesLabel.text(`${response.likesCount} Me gusta`);
+
+                // Reasignar el evento de clic al botón de "me gusta" en el modal
+                modalLikeButton.off('click').on('click', function() {
+                    addLike(publicacionId);
+                });
+            }
         },
         error: function(error) {
             console.error('Error al añadir "me gusta":', error);
         }
     });
 }
+
+
+
+
+
+
 
 function showLike(publicacionId) {
     return new Promise((resolve, reject) => {
@@ -267,13 +342,39 @@ function showLike(publicacionId) {
             data: JSON.stringify({ publicacionId: publicacionId }),
             contentType: 'application/json',
             success: function(response) {
-                var likebutton;
+                var likeButtonHtml;
                 if (response.status) {
-                    likebutton = '<img src="/images/me-gusta.png" alt="Me gusta">';
+                    likeButtonHtml = '<img src="/images/me-gusta.png" alt="Me gusta">';
                 } else {
-                    likebutton = '<img src="/images/me-gusta2.png" alt="Me gusta">';
+                    likeButtonHtml = '<img src="/images/me-gusta2.png" alt="Me gusta">';
                 }
-                resolve(likebutton);
+
+                // Actualizar el botón de "me gusta" en el feed
+                var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
+                var likeButton = publicacionContainer.find('.like-button');
+                var likesLabel = publicacionContainer.find('.likes-label');
+
+                likeButton.html(likeButtonHtml);
+                likesLabel.text(`${response.likesCount} Me gusta`);
+
+                likeButton.off('click').on('click', function() {
+                    toggleLike(publicacionId);
+                });
+
+                // Actualizar el botón de "me gusta" en el modal si está visible
+                if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
+                    var modalLikeButton = $('#modalLikeButton');
+                    var modalLikesLabel = $('#modalLikesLabel');
+
+                    modalLikeButton.html(likeButtonHtml);
+                    modalLikesLabel.text(`${response.likesCount} Me gusta`);
+
+                    modalLikeButton.off('click').on('click', function() {
+                        toggleLike(publicacionId);
+                    });
+                }
+
+                resolve(likeButtonHtml);
             },
             error: function(error) {
                 console.error('Error al verificar "me gusta":', error);
@@ -283,6 +384,8 @@ function showLike(publicacionId) {
     });
 }
 
+
+
 function addComment(publicacionId, texto) {
     $.ajax({
         type: 'POST',
@@ -290,14 +393,49 @@ function addComment(publicacionId, texto) {
         data: JSON.stringify({ publicacionId: publicacionId, texto: texto }),
         contentType: 'application/json',
         success: function(response) {
-            //alert(response.message);
-            cargarFeed(); // Recargar el feed para mostrar el nuevo comentario
+            // Agregar el comentario al DOM
+            var comentario = {
+                usuario: response.usuario, // Asumiendo que el servidor devuelve el usuario
+                texto: texto,
+                fecha: new Date()
+            };
+            renderComment(publicacionId, comentario);
+            // Limpiar el textarea
+            $(`[data-publicacion-id="${publicacionId}"] .comment-box`).val('');
+            $('#modalCommentBox').val(''); // Limpiar la caja de comentarios en el modal
         },
         error: function(error) {
             console.error('Error al añadir comentario:', error);
         }
     });
 }
+
+
+function renderComment(publicacionId, comentario) {
+    // Actualizar comentarios en la página principal
+    var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
+    var commentsContainer = publicacionContainer.find('.comments-container');
+
+    var commentElement = $('<div>', {
+        'class': 'comment',
+        'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+    });
+
+    commentsContainer.append(commentElement);
+
+    // Actualizar comentarios en el modal si está visible
+    if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
+        var modalCommentsContainer = $('#modalComments');
+
+        var modalCommentElement = $('<div>', {
+            'class': 'comment',
+            'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+        });
+
+        modalCommentsContainer.append(modalCommentElement);
+    }
+}
+
 
 function seguirUsuario(username) {
     $.ajax({
@@ -307,7 +445,7 @@ function seguirUsuario(username) {
         contentType: 'application/json',
         success: function(response) {
             alert(response.message);
-            cargarFeed(); // Recargar el feed para actualizar el estado de seguimiento
+            cargarFeed();
         },
         error: function(error) {
             if (error.responseJSON && error.responseJSON.message) {
@@ -327,7 +465,7 @@ function dejarDeSeguirUsuario(username) {
         contentType: 'application/json',
         success: function(response) {
             alert(response.message);
-            cargarFeed(); // Recargar el feed para actualizar el estado de seguimiento
+            cargarFeed();
         },
         error: function(error) {
             if (error.responseJSON && error.responseJSON.message) {
