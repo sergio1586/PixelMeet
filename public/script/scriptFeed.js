@@ -224,15 +224,19 @@ function toggleLike(publicacionId) {
         data: JSON.stringify({ publicacionId: publicacionId }),
         contentType: 'application/json',
         success: function(response) {
-            
-                showLike(publicacionId);
-            
+            if (response && response.likesCount !== undefined) {
+                var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
+                var likesLabel = publicacionContainer.find('.likes-label');
+                likesLabel.text(`${response.likesCount} Me gusta`);
+            }
+            showLike(publicacionId);
         },
         error: function(error) {
             console.error('Error al gestionar "me gusta":', error);
         }
     });
 }
+
 
 function subirImagen() {
     const fileInput = document.getElementById('inputImagen');
@@ -286,8 +290,8 @@ function addLike(publicacionId) {
             console.log(response); // Ver la respuesta del servidor
             var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
             var likeButton = publicacionContainer.find('.like-button');
-            var likesLabel = publicacionContainer.find('.likes-label');
-
+            //var likesLabel = publicacionContainer.find('.likes-label');
+            
             // Actualizar el botón de "me gusta" en el feed
             if (!response.status) {
                 likeButton.html('<img src="/images/me-gusta.png" alt="Me gusta">');
@@ -296,7 +300,7 @@ function addLike(publicacionId) {
             }
 
             // Actualizar el conteo de "me gusta"
-            likesLabel.text(`${response.likesCount} Me gusta`);
+            //likesLabel.text(`${response.likesCount} Me gusta`);
 
             // Reasignar el evento de clic al botón de "me gusta" en el feed
             likeButton.off('click').on('click', function() {
@@ -306,7 +310,7 @@ function addLike(publicacionId) {
             // Actualizar el botón de "me gusta" en el modal si está visible
             if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
                 var modalLikeButton = $('#modalLikeButton');
-                var modalLikesLabel = $('#modalLikesLabel');
+                //var modalLikesLabel = $('#modalLikesLabel');
 
                 if (response.status) {
                     modalLikeButton.html('<img src="/images/me-gusta.png" alt="Me gusta">');
@@ -314,7 +318,7 @@ function addLike(publicacionId) {
                     modalLikeButton.html('<img src="/images/me-gusta2.png" alt="Me gusta">');
                 }
 
-                modalLikesLabel.text(`${response.likesCount} Me gusta`);
+                //modalLikesLabel.text(`${response.likesCount} Me gusta`);
 
                 // Reasignar el evento de clic al botón de "me gusta" en el modal
                 modalLikeButton.off('click').on('click', function() {
@@ -352,10 +356,10 @@ function showLike(publicacionId) {
                 // Actualizar el botón de "me gusta" en el feed
                 var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
                 var likeButton = publicacionContainer.find('.like-button');
-                var likesLabel = publicacionContainer.find('.likes-label');
+                //var likesLabel = publicacionContainer.find('.likes-label');
 
                 likeButton.html(likeButtonHtml);
-                likesLabel.text(`${response.likesCount} Me gusta`);
+                //likesLabel.text(`${response.likesCount} Me gusta`);
 
                 likeButton.off('click').on('click', function() {
                     toggleLike(publicacionId);
@@ -364,10 +368,10 @@ function showLike(publicacionId) {
                 // Actualizar el botón de "me gusta" en el modal si está visible
                 if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
                     var modalLikeButton = $('#modalLikeButton');
-                    var modalLikesLabel = $('#modalLikesLabel');
+                    //var modalLikesLabel = $('#modalLikesLabel');
 
                     modalLikeButton.html(likeButtonHtml);
-                    modalLikesLabel.text(`${response.likesCount} Me gusta`);
+                    //modalLikesLabel.text(`${response.likesCount} Me gusta`);
 
                     modalLikeButton.off('click').on('click', function() {
                         toggleLike(publicacionId);

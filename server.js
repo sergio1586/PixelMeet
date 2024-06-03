@@ -440,6 +440,7 @@ app.post('/me-gusta', auth, async (req, res) => {
             publicacion.meGustas.push(usernick);
             await usuario.save();
             res.status(200).json({ success: true, liked: true, likesCount: publicacion.meGustas.length });
+            
         } else {
             // Ya ha dado "me gusta", eliminarlo
             publicacion.meGustas.splice(meGustaIndex, 1);
