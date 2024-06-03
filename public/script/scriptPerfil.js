@@ -142,13 +142,15 @@ function cargarPublicacionesUsuario() {
                             'class': 'comments-container'
                         });
 
-                        $.each(publicacion.comentarios, function(index, comentario) {
+                        // Mostrar solo el primer comentario en la página principal
+                        if (publicacion.comentarios.length > 0) {
+                            var primerComentario = publicacion.comentarios[0];
                             var commentElement = $('<div>', {
                                 'class': 'comment',
-                                'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+                                'html': `<strong>${primerComentario.usuario}</strong> ${primerComentario.texto}`
                             });
                             commentsContainer.append(commentElement);
-                        });
+                        }
 
                         var commentBox = $('<textarea>', {
                             'class': 'comment-box',
@@ -200,6 +202,7 @@ function cargarPublicacionesUsuario() {
         }
     });
 }
+
 
 function addLike(publicacionId) {
     $.ajax({

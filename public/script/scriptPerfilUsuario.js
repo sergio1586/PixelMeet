@@ -57,8 +57,6 @@ function cargarPublicacionesDeUsuario(username) {
                             $('#modalUserProfilePic').attr('src', `/${publicacion.imagenPerfil}`);
                             $('#modalUserProfileLink').attr('href', `/perfil/${publicacion.username}`).text(`@${publicacion.username}`);
                             $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion}`);
-                            console.log(`dentro de publicacion ${publicacion.username}`);
-                            console.log(`dentro de publicacion ${publicacion.descripcion}`);
                             $('#modalComments').empty();
                             $.each(publicacion.comentarios, function(index, comentario) {
                                 var commentElement = $('<div>', {
@@ -116,13 +114,15 @@ function cargarPublicacionesDeUsuario(username) {
                             'class': 'comments-container'
                         });
 
-                        $.each(publicacion.comentarios, function(index, comentario) {
+                        // Mostrar solo el primer comentario en la página principal
+                        if (publicacion.comentarios.length > 0) {
+                            var primerComentario = publicacion.comentarios[0];
                             var commentElement = $('<div>', {
                                 'class': 'comment',
-                                'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+                                'html': `<strong>${primerComentario.usuario}</strong> ${primerComentario.texto}`
                             });
                             commentsContainer.append(commentElement);
-                        });
+                        }
 
                         var commentBox = $('<textarea>', {
                             'class': 'comment-box',
@@ -174,6 +174,7 @@ function cargarPublicacionesDeUsuario(username) {
         }
     });
 }
+
 
 
 function showLike(publicacionId) {
@@ -302,4 +303,36 @@ function renderComment(publicacionId, comentario) {
 
         modalCommentsContainer.append(modalCommentElement);
     }
+}
+function subirImagen() {
+    const fileInput = document.getElementById('inputImagen');
+    const descripcion = document.getElementById('inputDescripcion');
+    //AÑADO CATEGORIA
+    const categoriaInput = document.getElementById('categoria');
+    const formData = new FormData();
+    formData.append('imagen', fileInput.files[0]);
+    formData.append('descripcion', descripcion.value); 
+    formData.append('categoria', categoriaInput.value);
+
+
+    $.ajax({
+        type: 'POST',
+        url: '/upload',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            console.log('Imagen subida correctamente');
+            console.log('Ruta de la imagen:', response.imagePath);
+            alert('Imagen subida correctamente');
+
+            // Cerrar el modal después de la subida exitosa
+            $('#uploadModal').modal('hide');
+            cargarPublicacionesUsuario();
+            cargarPerfil(); // Actualizar datos del perfil después de subir la imagen
+        },
+        error: function (error) {
+            console.error('Error al subir la imagen:', error);
+        }
+    });
 }

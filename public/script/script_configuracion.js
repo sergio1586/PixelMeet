@@ -75,7 +75,38 @@ function actualizarPerfil() {
         }
     });
 }
+function subirImagen() {
+    const fileInput = document.getElementById('inputImagen');
+    const descripcion = document.getElementById('inputDescripcion');
+    //AÑADO CATEGORIA
+    const categoriaInput = document.getElementById('categoria');
+    const formData = new FormData();
+    formData.append('imagen', fileInput.files[0]);
+    formData.append('descripcion', descripcion.value); 
+    formData.append('categoria', categoriaInput.value);
 
+
+    $.ajax({
+        type: 'POST',
+        url: '/upload',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            console.log('Imagen subida correctamente');
+            console.log('Ruta de la imagen:', response.imagePath);
+            alert('Imagen subida correctamente');
+
+            // Cerrar el modal después de la subida exitosa
+            $('#uploadModal').modal('hide');
+            cargarPublicacionesUsuario();
+            cargarPerfil(); // Actualizar datos del perfil después de subir la imagen
+        },
+        error: function (error) {
+            console.error('Error al subir la imagen:', error);
+        }
+    });
+}
 $(document).ready(function() {
     $('.tag').click(function() {
         $(this).toggleClass('selected');
