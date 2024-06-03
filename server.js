@@ -140,7 +140,9 @@ app.get('/publicaciones-usuario', auth, async (req, res) => {
                 _id: publicacion._id,
                 imagePath: publicacion.imagePath.replace('public\\', ''),
                 meGustas: publicacion.meGustas,
-                comentarios: publicacion.comentarios
+                comentarios: publicacion.comentarios,
+                username: usuario.username,
+                descripcion: publicacion.descripcion
             }));
             res.json({ publicaciones });
         } else {
@@ -411,7 +413,6 @@ app.post('/comentario', auth, async (req, res) => {
 });
 
 //LA FUNCIÓN ME GUSTA, LA DEJO ENTERA LA MÍA DIGO
-// Ruta para añadir un "me gusta" a una publicación
 // Ruta para añadir un "me gusta" a una publicación
 app.post('/me-gusta', auth, async (req, res) => {
     try {

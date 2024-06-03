@@ -212,3 +212,200 @@ h3.text-center {
 #uploadModal .btn {
     padding: 10px 20px; /* Añade padding a los botones */
 }
+
+/* Nuevas clases para ocultar y mostrar texto */
+.descripcion {
+    position: relative;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.descripcion.expand {
+    max-height: none;
+}
+
+.descripcion.collapsed {
+    max-height: 3em; /* Ajusta esta altura según tus necesidades */
+}
+
+.ver-mas-button {
+    background: none;
+    border: none;
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+    display: block;
+    margin-top: 5px;
+}
+
+.comment-container {
+    display: flex;
+    align-items: center;
+    margin: 10px;
+}
+
+.comment-box {
+    flex: 1;
+    margin: -10px;
+    border: none;
+    border-bottom: 1px solid #dbdbdb;
+    border-radius: 0;
+    resize: none;
+    font-size: 14px;
+}
+
+.comment-submit-button {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.submit-button-image {
+    margin: 5px;
+    width: 24px;
+    height: 24px;
+}
+
+#imageModal .modal-dialog {
+    max-width: 900px; /* Ancho máximo del modal */
+}
+
+#imageModal .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+#imageModal .modal-body {
+    display: flex;
+    flex-direction: row;
+    height: 500px; /* Tamaño fijo para todo el modal */
+    overflow: hidden; /* Evita que el contenido sobrepase el tamaño del modal */
+}
+
+#imageModal .modal-body .row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#imageModal .modal-body .col-md-8 {
+    max-height: 500px; /* Asegura que la imagen no exceda el tamaño del modal */
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#imageModal .modal-body .col-md-8 img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain; /* La imagen se adapta al tamaño del contenedor */
+}
+
+#imageModal .modal-body .col-md-4 {
+    background-color: #fff;
+    padding: 0;
+    height: 100%; /* Asegura que la columna derecha ocupe el 100% de la altura del modal */
+    overflow-y: auto; /* Añadir scroll si el contenido es mayor que el tamaño fijo */
+}
+
+/* Estilo para la barra de desplazamiento del modal */
+#imageModal .modal-body .col-md-4::-webkit-scrollbar {
+    width: 8px; /* Ancho de la barra de desplazamiento */
+}
+
+#imageModal .modal-body .col-md-4::-webkit-scrollbar-thumb {
+    background-color: #343a40; /* Color de la barra de desplazamiento */
+    border-radius: 4px; /* Bordes redondeados para la barra de desplazamiento */
+}
+
+#imageModal .modal-body .col-md-4 .p-3 {
+    padding: 20px;
+}
+
+#imageModal .modal-body .col-md-4 #modalUserProfile {
+    border-bottom: 1px solid #dbdbdb;
+    display: flex;
+    align-items: center;
+    max-width: 200px;
+}
+
+#imageModal .modal-body .col-md-4 #modalUserProfile img {
+    border: 1px solid #dbdbdb;
+    border-radius: 50%;
+}
+
+#imageModal .modal-body .col-md-4 #modalUserProfile a {
+    color: #007bff;
+    text-decoration: none;
+    margin-left: 10px;
+}
+
+#imageModal .modal-body .col-md-4 #modalDescription {
+    border-bottom: 1px solid #dbdbdb;
+    padding: 10px 0;
+}
+
+#imageModal .modal-body .col-md-4 #modalComments {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#imageModal .modal-body .col-md-4 #modalCommentInput {
+    border-top: 1px solid #dbdbdb;
+    display: flex;
+    align-items: center;
+    padding-top: 10px;
+}
+
+#imageModal .modal-body .col-md-4 #modalCommentInput .comment-box {
+    flex: 1;
+    border: 1px solid #dbdbdb;
+    border-radius: 5px;
+    resize: none;
+}
+
+#imageModal .modal-body .col-md-4 #modalCommentInput .comment-submit-button {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#imageModal .modal-body .col-md-4 #modalCommentInput .submit-button-image {
+    width: 24px;
+    height: 24px;
+}
+
+/* Estilo para el botón de cerrar el modal */
+#imageModal .btn-secondary {
+    position: absolute;
+    top: 0px;
+    right: 10px;
+    background-color: #343a40; /* Color de fondo del botón */
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 50%; /* Redondear los bordes del botón */
+    opacity: 0.8; /* Hacer el botón ligeramente transparente */
+    transition: opacity 0.3s ease; /* Transición suave para el cambio de opacidad */
+}
+
+#imageModal .btn-secondary:hover {
+    opacity: 1; /* Opacidad completa al pasar el ratón por encima */
+}
+
+#imageModal .btn-secondary img {
+    width: 20px;
+    height: 20px;
+}
