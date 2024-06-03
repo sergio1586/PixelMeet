@@ -100,7 +100,7 @@ function cargarPublicacionesUsuario() {
                                     toggleLike(publicacion._id);
                                 });
                             });
-                    
+
                             $('#modalCommentSubmitButton').off('click').on('click', function() {
                                 var comentarioTexto = $('#modalCommentBox').val();
                                 if (comentarioTexto) {
@@ -108,7 +108,7 @@ function cargarPublicacionesUsuario() {
                                     $('#modalCommentBox').val('');
                                 }
                             });
-                    
+
                             $('#imageModal').modal('show');
                         }
                     });
@@ -142,14 +142,54 @@ function cargarPublicacionesUsuario() {
                             'class': 'comments-container'
                         });
 
-                        // Mostrar solo el primer comentario en la página principal
-                        if (publicacion.comentarios.length > 0) {
-                            var primerComentario = publicacion.comentarios[0];
+                        // Mostrar solo los dos primeros comentarios en la página principal
+                        var comentariosMostrados = publicacion.comentarios.slice(0, 2);
+                        $.each(comentariosMostrados, function(index, comentario) {
                             var commentElement = $('<div>', {
                                 'class': 'comment',
-                                'html': `<strong>${primerComentario.usuario}</strong> ${primerComentario.texto}`
+                                'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
                             });
                             commentsContainer.append(commentElement);
+                        });
+
+                        // Si hay más de dos comentarios, añadir botón "Ver más"
+                        if (publicacion.comentarios.length > 2) {
+                            var verMasButton = $('<button>', {
+                                'class': 'ver-mas-button',
+                                'text': 'Ver más',
+                                'click': function() {
+                                    $('#modalImage').attr('src', `/${publicacion.imagePath}`).data('publicacion-id', publicacion._id);
+                                    $('#modalUserProfilePic').attr('src', `/${publicacion.imagenPerfil}`);
+                                    $('#modalUserProfileLink').attr('href', `/perfil/${publicacion.username}`).text(`@${publicacion.username}`);
+                                    $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion}`);
+                                    $('#modalComments').empty();
+                                    $.each(publicacion.comentarios, function(index, comentario) {
+                                        var commentElement = $('<div>', {
+                                            'class': 'comment',
+                                            'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+                                        });
+                                        $('#modalComments').append(commentElement);
+                                    });
+                                    $('#modalCommentBox').val('');
+                                    showLike(publicacion._id).then(likeButtonHtml => {
+                                        $('#modalLikeButton').html(likeButtonHtml);
+                                        $('#modalLikeButton').off('click').on('click', function() {
+                                            toggleLike(publicacion._id);
+                                        });
+                                    });
+
+                                    $('#modalCommentSubmitButton').off('click').on('click', function() {
+                                        var comentarioTexto = $('#modalCommentBox').val();
+                                        if (comentarioTexto) {
+                                            addComment(publicacion._id, comentarioTexto);
+                                            $('#modalCommentBox').val('');
+                                        }
+                                    });
+
+                                    $('#imageModal').modal('show');
+                                }
+                            });
+                            commentsContainer.append(verMasButton);
                         }
 
                         var commentBox = $('<textarea>', {
