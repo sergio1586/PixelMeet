@@ -203,7 +203,7 @@ app.get('/perfil-data/:username', auth, async (req, res) => {
         //const imagenPerfil = usuario.imagenPerfil ? usuario.imagenPerfil.replace(/\\/g, '/').replace('public/', '') : 'images/default-profile.png';
         //ESTO LO TENÍAS TÚ, LO DEJO QUE A MI NO ME AFECTA CREO
         const imagenPerfil = usuario.imagenPerfil ? '/'+usuario.imagenPerfil.replace('public\\', '') : 'images/default-profile.png';
-        console.log('Imagen de perfil:', imagenPerfil); // Agregar consola de depuración
+
         res.status(200).json({
             nombre: usuario.nombre,
             apellidos: usuario.apellidos,
@@ -229,7 +229,9 @@ app.get('/publicaciones-de-usuario/:username', auth, async (req, res) => {
             _id: publicacion._id,
             imagePath: publicacion.imagePath.replace('public\\', ''),
             meGustas: publicacion.meGustas,
-            comentarios: publicacion.comentarios
+            comentarios: publicacion.comentarios,
+            username: username,
+            descripcion: publicacion.descripcion
         }));
         res.status(200).json({ publicaciones });
     } else {
