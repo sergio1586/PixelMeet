@@ -8,12 +8,12 @@ body {
 }
 
 /* Estilo para la barra de desplazamiento de la página principal */
-body::-webkit-scrollbar {
+body::-webkit-scrollbar { 
     width: 8px; /* Ancho de la barra de desplazamiento */
 }
 
 body::-webkit-scrollbar-thumb {
-    background-color: #343a40; /* Color de la barra de desplazamiento */
+    background-color: #569ce3; /* Color de la barra de desplazamiento */
     border-radius: 4px; /* Bordes redondeados para la barra de desplazamiento */
 }
 
@@ -253,12 +253,13 @@ body::-webkit-scrollbar-thumb {
     background-color: #fff;
     padding: 0;
     height: 100%; /* Asegura que la columna derecha ocupe el 100% de la altura del modal */
-    overflow-y: auto; /* Añadir scroll si el contenido es mayor que el tamaño fijo */
+    /*overflow-y: auto; /* Añadir scroll si el contenido es mayor que el tamaño fijo */
 }
 
 /* Estilo para la barra de desplazamiento del modal */
 #imageModal .modal-body .col-md-4::-webkit-scrollbar {
     width: 8px; /* Ancho de la barra de desplazamiento */
+    
 }
 
 #imageModal .modal-body .col-md-4::-webkit-scrollbar-thumb {
@@ -294,8 +295,16 @@ body::-webkit-scrollbar-thumb {
 }
 
 #imageModal .modal-body .col-md-4 #modalComments {
-    max-height: 300px;
+    max-height: 280px;
     overflow-y: auto;
+}
+#modalComments::-webkit-scrollbar {
+    width: 8px; /* Ancho de la barra de desplazamiento */
+}
+
+#modalComments::-webkit-scrollbar-thumb {
+    background-color: #569ce3; /* Color de la barra de desplazamiento */
+    border-radius: 4px; /* Bordes redondeados para la barra de desplazamiento */
 }
 
 #imageModal .modal-body .col-md-4 #modalCommentInput {
