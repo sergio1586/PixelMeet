@@ -24,16 +24,25 @@ function cargarPerfilUsuario(username) {
                     $('#fotoperfil').attr('src', 'images/default-profile.png'); // Imagen de perfil predeterminada
                 }
 
-                // Configurar el botón de seguir/dejar de seguir
-                const followButton = $('#btnSeguir');
-                if (response.isFollowing) {
-                    followButton.text('Dejar de seguir').removeClass('btn-seguir').addClass('btn-dejar-seguir');
+                // Compara el usuario actual con el usuario del perfil
+                console.log(response.currentUser);
+                console.log(response.username);
+                if(response.currentUser === response.username) {
+                    // Ocultar el botón de seguir si es el mismo usuario
+                    $('#btnSeguir').hide();
                 } else {
-                    followButton.text('Seguir').removeClass('btn-dejar-seguir').addClass('btn-seguir');
+                    // Configurar el botón de seguir/dejar de seguir
+                    const followButton = $('#btnSeguir');
+                    if (response.isFollowing) {
+                        followButton.text('Dejar de seguir').removeClass('btn-seguir').addClass('btn-dejar-seguir');
+                    } else {
+                        followButton.text('Seguir').removeClass('btn-dejar-seguir').addClass('btn-seguir');
+                    }
+                    followButton.off('click').on('click', function() {
+                        toggleSeguir(username);
+                    });
+                    $('#btnSeguir').show();
                 }
-                followButton.off('click').on('click', function() {
-                    toggleSeguir(username);
-                });
             } else {
                 console.error('Error al cargar el perfil del usuario.');
             }
@@ -43,6 +52,7 @@ function cargarPerfilUsuario(username) {
         }
     });
 }
+
 
 function toggleSeguir(username) {
     $.ajax({

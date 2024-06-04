@@ -230,7 +230,8 @@ app.get('/perfil-data/:username', auth, async (req, res) => {
             seguidos: usuario.seguidos.length,
             publicaciones: usuario.publicaciones.length,
             imagenPerfil: imagenPerfil, // Ruta correcta para la imagen
-            isFollowing: isFollowing // Indica si el usuario actual sigue al usuario del perfil
+            isFollowing: isFollowing, // Indica si el usuario actual sigue al usuario del perfil
+            currentUser: currentUser.username // Añadimos el nombre del usuario actual
         });
     } else {
         res.status(404).json({ message: 'Usuario no encontrado' });
