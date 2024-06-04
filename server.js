@@ -197,11 +197,13 @@ app.get('/perfil/:username', auth, async (req, res) => {
 app.get('/perfil-data/:username', auth, async (req, res) => {
     const username = req.params.username;
     const usuario = await Usuario.findOne({ username });
-
-    if (usuario) {
+    const currentUserId = req.session.userId;
+    const currentUser = await Usuario.findById(currentUserId);
+    if (usuario && currentUser) {
         //ESTO ES LO QUE TENÍA YO
         //const imagenPerfil = usuario.imagenPerfil ? usuario.imagenPerfil.replace(/\\/g, '/').replace('public/', '') : 'images/default-profile.png';
         //ESTO LO TENÍAS TÚ, LO DEJO QUE A MI NO ME AFECTA CREO
+        const isFollowing = currentUser.seguidos.includes(usuario.username);
         const imagenPerfil = usuario.imagenPerfil ? '/'+usuario.imagenPerfil.replace('public\\', '') : 'images/default-profile.png';
 
         res.status(200).json({
@@ -211,7 +213,8 @@ app.get('/perfil-data/:username', auth, async (req, res) => {
             seguidores: usuario.seguidores.length,
             seguidos: usuario.seguidos.length,
             publicaciones: usuario.publicaciones.length,
-            imagenPerfil: imagenPerfil // Ruta correcta para la imagen
+            imagenPerfil: imagenPerfil, // Ruta correcta para la imagen
+            isFollowing: isFollowing // Indica si el usuario actual sigue al usuario del perfil
         });
     } else {
         res.status(404).json({ message: 'Usuario no encontrado' });
@@ -314,6 +317,40 @@ app.post('/upload', auth, upload.single('imagen'), async (req, res) => {
         res.status(500).json({ message: 'Error al subir la imagen' });
     }
 });
+app.post('/toggle-seguir', auth, async (req, res) => {
+    try {
+        const usuarioId = req.session.userId;
+        const toggleUsername = req.body.username; // Nombre de usuario a seguir/dejar de seguir
+
+        const usuario = await Usuario.findById(usuarioId);
+        const usuarioAToggle = await Usuario.findOne({ username: toggleUsername });
+
+        if (!usuarioAToggle) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        // Verificar si ya sigue al usuario
+        if (usuario.seguidos.includes(usuarioAToggle.username)) {
+            // Dejar de seguir al usuario
+            usuario.seguidos = usuario.seguidos.filter(username => username !== usuarioAToggle.username);
+            usuarioAToggle.seguidores = usuarioAToggle.seguidores.filter(username => username !== usuario.username);
+            await usuario.save();
+            await usuarioAToggle.save();
+            return res.status(200).json({ followed: false });
+        } else {
+            // Seguir al usuario
+            usuario.seguidos.push(usuarioAToggle.username);
+            usuarioAToggle.seguidores.push(usuario.username);
+            await usuario.save();
+            await usuarioAToggle.save();
+            return res.status(200).json({ followed: true });
+        }
+    } catch (error) {
+        console.error('Error al seguir/dejar de seguir al usuario:', error);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
+});
+
 // Ruta para seguir a un usuario
 app.post('/seguir', auth, async (req, res) => {
     try {

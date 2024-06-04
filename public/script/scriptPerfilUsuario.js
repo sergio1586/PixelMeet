@@ -23,6 +23,17 @@ function cargarPerfilUsuario(username) {
                 } else {
                     $('#fotoperfil').attr('src', 'images/default-profile.png'); // Imagen de perfil predeterminada
                 }
+
+                // Configurar el botón de seguir/dejar de seguir
+                const followButton = $('#btnSeguir');
+                if (response.isFollowing) {
+                    followButton.text('Dejar de seguir').removeClass('btn-seguir').addClass('btn-dejar-seguir');
+                } else {
+                    followButton.text('Seguir').removeClass('btn-dejar-seguir').addClass('btn-seguir');
+                }
+                followButton.off('click').on('click', function() {
+                    toggleSeguir(username);
+                });
             } else {
                 console.error('Error al cargar el perfil del usuario.');
             }
@@ -33,6 +44,24 @@ function cargarPerfilUsuario(username) {
     });
 }
 
+function toggleSeguir(username) {
+    $.ajax({
+        type: 'POST',
+        url: '/toggle-seguir',
+        data: JSON.stringify({ username: username }),
+        contentType: 'application/json',
+        success: function (response) {
+            if (response.followed) {
+                $('#btnSeguir').text('Dejar de seguir').removeClass('btn-seguir').addClass('btn-dejar-seguir');
+            } else {
+                $('#btnSeguir').text('Seguir').removeClass('btn-dejar-seguir').addClass('btn-seguir');
+            }
+        },
+        error: function (error) {
+            console.error('Error al seguir/dejar de seguir al usuario:', error);
+        }
+    });
+}
 function cargarPublicacionesDeUsuario(username) {
     $.ajax({
         type: 'GET',
