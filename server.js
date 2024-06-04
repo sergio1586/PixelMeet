@@ -103,7 +103,21 @@ app.get('/home', auth, (req, res) => {
         res.status(500).json({ error: 'Error del servidor' });
     }
 });*/
+app.get('/obtenerEtiquetasUsuario', auth, async (req, res) => {
+    try {
+        const username = req.session.user;
+        const usuario = await Usuario.findOne({ username: username }, 'etiquetas');
 
+        if (!usuario) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.status(200).json({ etiquetas: Object.keys(usuario.etiquetas).filter(key => usuario.etiquetas[key] === true) });
+    } catch (error) {
+        console.error('Error al obtener las etiquetas del usuario:', error);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
+});
 app.get('/cargarFeed', auth, async (req, res) => {
     try {
         const usuarios = await Usuario.find({}, 'publicaciones username').exec();
@@ -118,7 +132,9 @@ app.get('/cargarFeed', auth, async (req, res) => {
                     imagePath: imagePath,
                     meGustas: publicacion.meGustas,
                     comentarios: publicacion.comentarios,
-                    descripcion: publicacion.descripcion // Añadido el atributo descripción
+                    descripcion: publicacion.descripcion,
+                    categoria: publicacion.categoria // Añadido el atributo descripción
+
                 });
             });
         });

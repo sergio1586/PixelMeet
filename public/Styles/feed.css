@@ -349,3 +349,8 @@ body::-webkit-scrollbar-thumb {
     width: 20px;
     height: 20px;
 }
+.categoria {
+    color: #007bff;
+    font-weight: bold;
+    margin-left: 5px;
+}

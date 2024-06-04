@@ -1,6 +1,27 @@
+var etiquetasUsuario = [];
 document.addEventListener('DOMContentLoaded', function() {
-    cargarFeed();
+    cargarEtiquetasUsuario().then(() => {
+        console.log(etiquetasUsuario);
+        cargarFeed();
+    }).catch(error => {
+        console.error('Error al cargar las etiquetas del usuario:', error);
+    });
 });
+function cargarEtiquetasUsuario() {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            type: 'GET',
+            url: '/obtenerEtiquetasUsuario',
+            success: function(response) {
+                etiquetasUsuario = response.etiquetas;
+                resolve();
+            },
+            error: function(error) {
+                reject(error);
+            }
+        });
+    });
+}
 
 function cargarFeed() {
     $.ajax({
@@ -11,7 +32,11 @@ function cargarFeed() {
                 var feed = $('#feed');
                 feed.empty();
 
-                $.each(response.publicaciones, function(index, publicacion) {
+                // Ordenar las publicaciones de acuerdo a las etiquetas del usuario
+                var sortedPublicaciones = ordenarPublicaciones(response.publicaciones, etiquetasUsuario);
+
+                // Renderizar las publicaciones ordenadas
+                $.each(sortedPublicaciones, function(index, publicacion) {
                     const imgContainer = $('<div>', {
                         'class': 'image-container',
                         'style': 'position: relative; margin: 10px auto;',
@@ -22,36 +47,7 @@ function cargarFeed() {
                         src: `/${publicacion.imagePath}`,
                         'class': 'feed-img',
                         'click': function() {
-                            $('#modalImage').attr('src', `/${publicacion.imagePath}`).data('publicacion-id', publicacion._id);
-                            $('#modalUserProfilePic').attr('src', `/${publicacion.imagenPerfil}`);
-                            $('#modalUserProfileLink').attr('href', `/perfil/${publicacion.username}`).text(`@${publicacion.username}`);
-                            $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion}`);
-                            $('#modalComments').empty();
-                            $.each(publicacion.comentarios, function(index, comentario) {
-                                var commentElement = $('<div>', {
-                                    'class': 'comment',
-                                    'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
-                                });
-                                $('#modalComments').append(commentElement);
-                            });
-                            $('#modalCommentBox').val('');
-                            showLike(publicacion._id).then(likeButtonHtml => {
-                                $('#modalLikeButton').html(likeButtonHtml);
-                                $('#modalLikeButton').off('click').on('click', function() {
-                                    toggleLike(publicacion._id);
-                                });
-                            });
-                    
-                            // Configurar el botón de envío de comentarios en el modal
-                            $('#modalCommentSubmitButton').off('click').on('click', function() {
-                                var comentarioTexto = $('#modalCommentBox').val();
-                                if (comentarioTexto) {
-                                    addComment(publicacion._id, comentarioTexto);
-                                    $('#modalCommentBox').val(''); // Limpiar la caja de comentarios
-                                }
-                            });
-                    
-                            $('#imageModal').modal('show');
+                            cargarModal(publicacion);
                         }
                     });
 
@@ -71,9 +67,10 @@ function cargarFeed() {
                         'class': 'descripcion'
                     });
 
+                    var categoria = `<span class="categoria">#${publicacion.categoria}</span>`; // Añadir la categoría
                     if (publicacion.descripcion) {
-                        var shortText = `<strong>${publicacion.username}</strong> ${publicacion.descripcion.substring(0, 100)}... `;
-                        var fullText = `<strong>${publicacion.username}</strong> ${publicacion.descripcion}`;
+                        var shortText = `<strong>${publicacion.username}</strong> ${publicacion.descripcion.substring(0, 100)}... ${categoria}`;
+                        var fullText = `<strong>${publicacion.username}</strong> ${publicacion.descripcion} ${categoria}`;
                         var isShort = true;
 
                         if (publicacion.descripcion.length > 100) {
@@ -95,7 +92,7 @@ function cargarFeed() {
                             descripcionDiv.html(fullText);
                         }
                     } else {
-                        descripcionDiv.html(`<strong>${publicacion.username}</strong>`);
+                        descripcionDiv.html(`<strong>${publicacion.username}</strong> ${categoria}`);
                     }
 
                     var likesLabel = $('<div>', {
@@ -114,38 +111,9 @@ function cargarFeed() {
 
                         var commentButton = $('<button>', {
                             'class': 'comment-button',
-                            'text': 'Comentar',
+                            'html': '<img src="/images/comente.png" alt="Comentario">',
                             'click': function() {
-                                var comentarioTexto = prompt('Introduce tu comentario:');
-                                if (comentarioTexto) {
-                                    addComment(publicacion._id, comentarioTexto);
-                                }
-                            }
-                        });
-
-                        var followButton = $('<button>', {
-                            'class': 'follow-button',
-                            'text': 'Seguir',
-                            'click': function() {
-                                seguirUsuario(publicacion.username);
-                            }
-                        });
-
-                        var unfollowButton = $('<button>', {
-                            'class': 'unfollow-button',
-                            'text': 'Dejar de Seguir',
-                            'click': function() {
-                                dejarDeSeguirUsuario(publicacion.username);
-                            }
-                        });
-
-                        var deleteButton = $('<button>', {
-                            'class': 'delete-button',
-                            'text': 'Eliminar',
-                            'click': function() {
-                                if (confirm('¿Estás seguro de que quieres eliminar esta foto?')) {
-                                    deletePhoto(publicacion._id);
-                                }
+                                cargarModal(publicacion);
                             }
                         });
 
@@ -196,14 +164,10 @@ function cargarFeed() {
                             .append(likesLabel)
                             .append(likeButton)
                             .append(commentButton)
-                            .append(followButton)
-                            .append(unfollowButton)
-                            .append(deleteButton)
                             .append(commentsContainer)
                             .append(commentContainer);
 
                         feed.append(imgContainer);
-
                     }).catch(error => {
                         console.error('Error al obtener el botón de me gusta:', error);
                     });
@@ -216,6 +180,54 @@ function cargarFeed() {
             console.error('Error al cargar el feed:', error);
         }
     });
+}
+
+function ordenarPublicaciones(publicaciones, userEtiquetas) {
+    // Filtra y separa las publicaciones que coinciden con las etiquetas del usuario
+    let preferidas = publicaciones.filter(pub => userEtiquetas.includes(pub.categoria));
+    let noPreferidas = publicaciones.filter(pub => !userEtiquetas.includes(pub.categoria));
+
+    // Mezcla aleatoriamente las publicaciones en cada grupo
+    preferidas = preferidas.sort(() => Math.random() - 0.5);
+    noPreferidas = noPreferidas.sort(() => Math.random() - 0.5);
+
+    // Combina los dos grupos, preferidas primero
+    console.log([...preferidas, ...noPreferidas])
+    return [...preferidas, ...noPreferidas];
+}
+
+function cargarModal(publicacion){
+    $('#modalImage').attr('src', `/${publicacion.imagePath}`).data('publicacion-id', publicacion._id);
+    $('#modalUserProfilePic').attr('src', `/${publicacion.imagenPerfil}`);
+    $('#modalUserProfileLink').attr('href', `/perfil/${publicacion.username}`).text(`@${publicacion.username}`);
+    var categoria = `<span class="categoria">#${publicacion.categoria}</span>`; // Añadir la categoría
+    $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion} ${categoria}`);
+    $('#modalComments').empty();
+    $.each(publicacion.comentarios, function(index, comentario) {
+        var commentElement = $('<div>', {
+            'class': 'comment',
+            'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+        });
+        $('#modalComments').append(commentElement);
+    });
+    $('#modalCommentBox').val('');
+    showLike(publicacion._id).then(likeButtonHtml => {
+        $('#modalLikeButton').html(likeButtonHtml);
+        $('#modalLikeButton').off('click').on('click', function() {
+            toggleLike(publicacion._id);
+        });
+    });
+
+    // Configurar el botón de envío de comentarios en el modal
+    $('#modalCommentSubmitButton').off('click').on('click', function() {
+        var comentarioTexto = $('#modalCommentBox').val();
+        if (comentarioTexto) {
+            addComment(publicacion._id, comentarioTexto);
+            $('#modalCommentBox').val(''); // Limpiar la caja de comentarios
+        }
+    });
+
+    $('#imageModal').modal('show');
 }
 function toggleLike(publicacionId) {
     $.ajax({
