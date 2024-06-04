@@ -57,8 +57,6 @@ function cargarPublicacionesDeUsuario(username) {
                             $('#modalUserProfilePic').attr('src', `/${publicacion.imagenPerfil}`);
                             $('#modalUserProfileLink').attr('href', `/perfil/${publicacion.username}`).text(`@${publicacion.username}`);
                             $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion}`);
-                            console.log(`dentro de publicacion ${publicacion.username}`);
-                            console.log(`dentro de publicacion ${publicacion.descripcion}`);
                             $('#modalComments').empty();
                             $.each(publicacion.comentarios, function(index, comentario) {
                                 var commentElement = $('<div>', {
@@ -326,6 +324,7 @@ function addComment(publicacionId, texto) {
         }
     });
 }
+
 function renderComment(publicacionId, comentario) {
     var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
     var commentsContainer = publicacionContainer.find('.comments-container');
@@ -335,19 +334,49 @@ function renderComment(publicacionId, comentario) {
         'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
     });
 
+    // Añadir el comentario al contenedor
     commentsContainer.append(commentElement);
 
+    // Obtener todos los comentarios existentes
+    var existingComments = commentsContainer.children('.comment');
+
+    // Mostrar solo los primeros dos comentarios y el botón "Ver más" si hay más de dos
+    if (existingComments.length > 2) {
+        existingComments.slice(2).hide();
+
+        var verMasButton = commentsContainer.find('.ver-mas-button');
+        if (verMasButton.length === 0) {
+            verMasButton = $('<button>', {
+                'class': 'ver-mas-button',
+                'text': 'Ver más',
+                'click': function() {
+                    // Abrir el modal con todos los comentarios
+                    $('#imageModal').modal('show');
+                }
+            });
+            commentsContainer.append(verMasButton);
+        }
+    } else {
+        commentsContainer.find('.ver-mas-button').remove();
+    }
+
+    // Actualizar el modal si está visible y corresponde a la publicación actual
     if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
-        var modalCommentsContainer = $('#modalComments');
-
-        var modalCommentElement = $('<div>', {
-            'class': 'comment',
-            'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
-        });
-
-        modalCommentsContainer.append(modalCommentElement);
+        updateModalComments(publicacionId, comentario);
     }
 }
+
+function updateModalComments(publicacionId, comentario) {
+    var modalCommentsContainer = $('#modalComments');
+
+    var modalCommentElement = $('<div>', {
+        'class': 'comment',
+        'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+    });
+
+    modalCommentsContainer.append(modalCommentElement);
+}
+
 function subirImagen() {
     const fileInput = document.getElementById('inputImagen');
     const descripcion = document.getElementById('inputDescripcion');
