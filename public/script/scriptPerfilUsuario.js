@@ -57,8 +57,6 @@ function cargarPublicacionesDeUsuario(username) {
                             $('#modalUserProfilePic').attr('src', `/${publicacion.imagenPerfil}`);
                             $('#modalUserProfileLink').attr('href', `/perfil/${publicacion.username}`).text(`@${publicacion.username}`);
                             $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion}`);
-                            console.log(`dentro de publicacion ${publicacion.username}`);
-                            console.log(`dentro de publicacion ${publicacion.descripcion}`);
                             $('#modalComments').empty();
                             $.each(publicacion.comentarios, function(index, comentario) {
                                 var commentElement = $('<div>', {
@@ -74,7 +72,7 @@ function cargarPublicacionesDeUsuario(username) {
                                     toggleLike(publicacion._id);
                                 });
                             });
-                    
+
                             $('#modalCommentSubmitButton').off('click').on('click', function() {
                                 var comentarioTexto = $('#modalCommentBox').val();
                                 if (comentarioTexto) {
@@ -82,7 +80,7 @@ function cargarPublicacionesDeUsuario(username) {
                                     $('#modalCommentBox').val('');
                                 }
                             });
-                    
+
                             $('#imageModal').modal('show');
                         }
                     });
@@ -116,13 +114,55 @@ function cargarPublicacionesDeUsuario(username) {
                             'class': 'comments-container'
                         });
 
-                        $.each(publicacion.comentarios, function(index, comentario) {
+                        // Mostrar solo los dos primeros comentarios en la página principal
+                        var comentariosMostrados = publicacion.comentarios.slice(0, 2);
+                        $.each(comentariosMostrados, function(index, comentario) {
                             var commentElement = $('<div>', {
                                 'class': 'comment',
                                 'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
                             });
                             commentsContainer.append(commentElement);
                         });
+
+                        // Si hay más de dos comentarios, añadir botón "Ver más"
+                        if (publicacion.comentarios.length > 2) {
+                            var verMasButton = $('<button>', {
+                                'class': 'ver-mas-button',
+                                'text': 'Ver más',
+                                'click': function() {
+                                    $('#modalImage').attr('src', `/${publicacion.imagePath}`).data('publicacion-id', publicacion._id);
+                                    $('#modalUserProfilePic').attr('src', `/${publicacion.imagenPerfil}`);
+                                    $('#modalUserProfileLink').attr('href', `/perfil/${publicacion.username}`).text(`@${publicacion.username}`);
+                                    $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion}`);
+                                    $('#modalComments').empty();
+                                    $.each(publicacion.comentarios, function(index, comentario) {
+                                        var commentElement = $('<div>', {
+                                            'class': 'comment',
+                                            'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+                                        });
+                                        $('#modalComments').append(commentElement);
+                                    });
+                                    $('#modalCommentBox').val('');
+                                    showLike(publicacion._id).then(likeButtonHtml => {
+                                        $('#modalLikeButton').html(likeButtonHtml);
+                                        $('#modalLikeButton').off('click').on('click', function() {
+                                            toggleLike(publicacion._id);
+                                        });
+                                    });
+
+                                    $('#modalCommentSubmitButton').off('click').on('click', function() {
+                                        var comentarioTexto = $('#modalCommentBox').val();
+                                        if (comentarioTexto) {
+                                            addComment(publicacion._id, comentarioTexto);
+                                            $('#modalCommentBox').val('');
+                                        }
+                                    });
+
+                                    $('#imageModal').modal('show');
+                                }
+                            });
+                            commentsContainer.append(verMasButton);
+                        }
 
                         var commentBox = $('<textarea>', {
                             'class': 'comment-box',
@@ -138,6 +178,7 @@ function cargarPublicacionesDeUsuario(username) {
                                 }
                             }
                         });
+
                         var submitButtonImage = $('<img>', {
                             'src': '/images/enviar.png',
                             'alt': 'Enviar',
@@ -174,6 +215,8 @@ function cargarPublicacionesDeUsuario(username) {
         }
     });
 }
+
+
 
 
 function showLike(publicacionId) {
@@ -281,6 +324,7 @@ function addComment(publicacionId, texto) {
         }
     });
 }
+
 function renderComment(publicacionId, comentario) {
     var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
     var commentsContainer = publicacionContainer.find('.comments-container');
@@ -290,16 +334,78 @@ function renderComment(publicacionId, comentario) {
         'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
     });
 
+    // Añadir el comentario al contenedor
     commentsContainer.append(commentElement);
 
-    if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
-        var modalCommentsContainer = $('#modalComments');
+    // Obtener todos los comentarios existentes
+    var existingComments = commentsContainer.children('.comment');
 
-        var modalCommentElement = $('<div>', {
-            'class': 'comment',
-            'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
-        });
+    // Mostrar solo los primeros dos comentarios y el botón "Ver más" si hay más de dos
+    if (existingComments.length > 2) {
+        existingComments.slice(2).hide();
 
-        modalCommentsContainer.append(modalCommentElement);
+        var verMasButton = commentsContainer.find('.ver-mas-button');
+        if (verMasButton.length === 0) {
+            verMasButton = $('<button>', {
+                'class': 'ver-mas-button',
+                'text': 'Ver más',
+                'click': function() {
+                    // Abrir el modal con todos los comentarios
+                    $('#imageModal').modal('show');
+                }
+            });
+            commentsContainer.append(verMasButton);
+        }
+    } else {
+        commentsContainer.find('.ver-mas-button').remove();
     }
+
+    // Actualizar el modal si está visible y corresponde a la publicación actual
+    if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
+        updateModalComments(publicacionId, comentario);
+    }
+}
+
+function updateModalComments(publicacionId, comentario) {
+    var modalCommentsContainer = $('#modalComments');
+
+    var modalCommentElement = $('<div>', {
+        'class': 'comment',
+        'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+    });
+
+    modalCommentsContainer.append(modalCommentElement);
+}
+
+function subirImagen() {
+    const fileInput = document.getElementById('inputImagen');
+    const descripcion = document.getElementById('inputDescripcion');
+    //AÑADO CATEGORIA
+    const categoriaInput = document.getElementById('categoria');
+    const formData = new FormData();
+    formData.append('imagen', fileInput.files[0]);
+    formData.append('descripcion', descripcion.value); 
+    formData.append('categoria', categoriaInput.value);
+
+
+    $.ajax({
+        type: 'POST',
+        url: '/upload',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            console.log('Imagen subida correctamente');
+            console.log('Ruta de la imagen:', response.imagePath);
+            alert('Imagen subida correctamente');
+
+            // Cerrar el modal después de la subida exitosa
+            $('#uploadModal').modal('hide');
+            cargarPublicacionesUsuario();
+            cargarPerfil(); // Actualizar datos del perfil después de subir la imagen
+        },
+        error: function (error) {
+            console.error('Error al subir la imagen:', error);
+        }
+    });
 }
