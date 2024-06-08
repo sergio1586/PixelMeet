@@ -76,10 +76,10 @@ function cargarFeed() {
 
                         if (publicacion.descripcion.length > 100) {
                             descripcionDiv.html(shortText);
-
+                        
                             var verMasButton = $('<button>', {
                                 'text': 'Ver más',
-                                'class': 'ver-mas-button',
+                                'class': 'ver-mas-button2',
                                 'click': function(e) {
                                     e.preventDefault();
                                     toggleDescription(descripcionDiv, verMasButton, shortText, fullText, isShort).then(updatedState => {
@@ -87,7 +87,7 @@ function cargarFeed() {
                                     });
                                 }
                             });
-
+                        
                             descripcionDiv.append(verMasButton);
                         } else {
                             descripcionDiv.html(fullText);
@@ -303,14 +303,17 @@ function subirImagen() {
 function toggleDescription(descripcionDiv, verMasButton, shortText, fullText, isShort) {
     return new Promise((resolve) => {
         if (isShort) {
-            descripcionDiv.html(fullText).append(verMasButton.text('Ver menos'));
-            resolve(false);
+            descripcionDiv.html(fullText);
+            verMasButton.text('Ver menos');
         } else {
-            descripcionDiv.html(shortText).append(verMasButton.text('Ver más'));
-            resolve(true);
+            descripcionDiv.html(shortText);
+            verMasButton.text('Ver más');
         }
+        descripcionDiv.append(verMasButton);
+        resolve(!isShort);
     });
 }
+
 
 function addComment(publicacionId, texto) {
     $.ajax({

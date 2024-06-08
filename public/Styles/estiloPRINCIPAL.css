@@ -304,6 +304,9 @@ body::-webkit-scrollbar-thumb {
 #imageModal .modal-body .col-md-4 #modalDescription {
     border-bottom: 1px solid #dbdbdb;
     padding: 10px 0;
+    word-wrap: break-word; /* Permite que las palabras largas se dividan y hagan salto de línea */
+    white-space: pre-wrap; /* Mantiene los saltos de línea y los espacios en blanco */
+    overflow-wrap: break-word; /* Evita que las palabras largas se salgan del contenedor */
 }
 
 #imageModal .modal-body .col-md-4 #modalComments {
@@ -542,4 +545,22 @@ h3.text-center {
 .comments-container::-webkit-scrollbar-thumb {
     background-color: #569ce3; /* Color de la barra de desplazamiento */
     border-radius: 4px; /* Bordes redondeados para la barra de desplazamiento */
+}
+.ver-mas-button2 {
+    display: inline;
+    margin-left: 5px;
+    padding: 0;
+    background-color: transparent;
+    color: rgba(0, 0, 0, 0.6); /* Color gris más transparente */
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: normal;
+    text-decoration: underline;
+    outline: none;
+    transition: color 0.3s;
+}
+
+.ver-mas-button2:hover {
+    color: rgba(0, 0, 0, 0.8); /* Color un poco más oscuro al pasar el ratón */
 }
