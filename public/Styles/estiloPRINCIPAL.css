@@ -1,0 +1,545 @@
+/* CSS existente del primer archivo */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #fafafa;
+    margin: 0;
+    padding: 0;
+}
+
+/* Estilo para la barra de desplazamiento de la página principal */
+body::-webkit-scrollbar { 
+    width: 8px; /* Ancho de la barra de desplazamiento */
+}
+
+body::-webkit-scrollbar-thumb {
+    background-color: #569ce3; /* Color de la barra de desplazamiento */
+    border-radius: 4px; /* Bordes redondeados para la barra de desplazamiento */
+}
+
+.menu-lateral {
+    background-color: #343a40;
+    color: white;
+    padding: 20px;
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.menu-lateral .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: white;
+}
+
+.menu-lateral .nav-link:hover {
+    background-color: #495057;
+}
+
+.icono-nav {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.contenido {
+    margin-left: 80px;
+    padding: 20px;
+    width: calc(100% - 80px);
+}
+
+.galeria {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.image-container {
+    position: relative;
+    display: block;
+    margin: 10px 0;
+    width: 100%;
+    max-width: 600px;
+    border: 1px solid #dbdbdb;
+    border-radius: 3px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.image-container img.feed-img {
+    width: 100%;
+    height: auto;
+}
+
+.user-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.modal-body {
+    padding: 0;
+}
+
+.modal-body img {
+    width: 100%;
+    height: auto;
+}
+
+.btn-secondary img {
+    width: 20px;
+    height: 20px;
+}
+
+.like-button, .comment-button {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.like-button img, .comment-button img {
+    width: 24px;
+    height: 24px;
+}
+
+.descripcion {
+    display: inline;
+    color: white;
+    padding: 5px;
+    padding-left: 0px;
+    border-radius: 3px;
+}
+
+.descripcion a {
+    color: #007bff;
+    cursor: pointer;
+}
+
+.descripcion {
+    margin: 10px 0;
+    color: #333;
+}
+
+.descripcion a {
+    color: #007bff;
+    cursor: pointer;
+}
+
+.image-container {
+    position: relative;
+    display: block;
+    margin: 10px auto;
+    width: 100%;
+    max-width: 600px;
+    border: 1px solid #dbdbdb;
+    border-radius: 3px;
+    overflow: hidden;
+    background-color: #fff;
+    padding: 10px;
+}
+
+/* Nuevas clases para ocultar y mostrar texto */
+.descripcion {
+    position: relative;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.descripcion.expand {
+    max-height: none;
+}
+
+.descripcion.collapsed {
+    max-height: 3em; /* Ajusta esta altura según tus necesidades */
+}
+
+.ver-mas-button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 30px;
+    background-color: #56c0f0;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+.ver-mas-button:hover {
+    background-color: #4461ef;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.comment-container {
+    display: flex;
+    align-items: center;
+    margin: 10px;
+}
+
+.comment-box {
+    flex: 1;
+    margin: -10px;
+    border: none;
+    border-bottom: 1px solid #dbdbdb;
+    border-radius: 0;
+    resize: none;
+    font-size: 14px;
+}
+
+.comment-submit-button {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.submit-button-image {
+    margin: 5px;
+    width: 24px;
+    height: 24px;
+}
+
+#imageModal .modal-dialog {
+    max-width: 900px; /* Ancho máximo del modal */
+}
+
+#imageModal .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+#imageModal .modal-body {
+    display: flex;
+    flex-direction: row;
+    height: 500px; /* Tamaño fijo para todo el modal */
+    overflow: hidden; /* Evita que el contenido sobrepase el tamaño del modal */
+}
+
+#imageModal .modal-body .row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#imageModal .modal-body .col-md-8 {
+    max-height: 500px; /* Asegura que la imagen no exceda el tamaño del modal */
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#imageModal .modal-body .col-md-8 img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain; /* La imagen se adapta al tamaño del contenedor */
+}
+
+#imageModal .modal-body .col-md-4 {
+    background-color: #fff;
+    padding: 0;
+    height: 100%; /* Asegura que la columna derecha ocupe el 100% de la altura del modal */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Estilo para la barra de desplazamiento del modal */
+#imageModal .modal-body .col-md-4::-webkit-scrollbar {
+    width: 8px; /* Ancho de la barra de desplazamiento */
+}
+
+#imageModal .modal-body .col-md-4::-webkit-scrollbar-thumb {
+    background-color: #343a40; /* Color de la barra de desplazamiento */
+    border-radius: 4px; /* Bordes redondeados para la barra de desplazamiento */
+}
+
+#imageModal .modal-body .col-md-4 .p-3 {
+    padding: 20px;
+}
+
+#imageModal .modal-body .col-md-4 #modalUserProfile {
+    border-bottom: 1px solid #dbdbdb;
+    display: flex;
+    align-items: center;
+    max-width: 200px;
+}
+
+#imageModal .modal-body .col-md-4 #modalUserProfile img {
+    border: 1px solid #dbdbdb;
+    border-radius: 50%;
+}
+
+#imageModal .modal-body .col-md-4 #modalUserProfile a {
+    color: #007bff;
+    text-decoration: none;
+    margin-left: 10px;
+}
+
+#imageModal .modal-body .col-md-4 #modalDescription {
+    border-bottom: 1px solid #dbdbdb;
+    padding: 10px 0;
+}
+
+#imageModal .modal-body .col-md-4 #modalComments {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 280px;
+}
+
+#modalComments::-webkit-scrollbar {
+    width: 8px; /* Ancho de la barra de desplazamiento */
+}
+
+#modalComments::-webkit-scrollbar-thumb {
+    background-color: #569ce3; /* Color de la barra de desplazamiento */
+    border-radius: 4px; /* Bordes redondeados para la barra de desplazamiento */
+}
+
+#imageModal .modal-body .col-md-4 #modalCommentInput {
+    border-top: 1px solid #dbdbdb;
+    display: flex;
+    align-items: center;
+    padding-top: 10px;
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+}
+
+
+#imageModal .modal-body .col-md-4 #modalCommentInput .comment-box {
+    flex: 1;
+    border: 1px solid #dbdbdb;
+    border-radius: 5px;
+    resize: none;
+}
+
+#imageModal .modal-body .col-md-4 #modalCommentInput .comment-submit-button {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#imageModal .modal-body .col-md-4 #modalCommentInput .submit-button-image {
+    width: 24px;
+    height: 24px;
+}
+
+/* Estilo para el botón de cerrar el modal */
+#imageModal .btn.btn-secondary {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #4684c2; /* Color de fondo del botón */
+    color: white; /* Color del texto */
+    border: none;
+    cursor: pointer;
+    padding: 5px; /* Ajustar el padding para mejorar la visibilidad */
+    border-radius: 50%; /* Redondear los bordes del botón */
+    opacity: 0.8; /* Hacer el botón ligeramente transparente */
+    transition: opacity 0.3s ease; /* Transición suave para el cambio de opacidad */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#imageModal .btn.btn-secondary:hover {
+    opacity: 1; /* Opacidad completa al pasar el ratón por encima */
+}
+
+#imageModal .btn.btn-secondary img {
+    width: 20px;
+    height: 20px;
+    display: block; /* Asegurar que la imagen se muestre */
+}
+
+
+
+.categoria {
+    color: #007bff;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* Estilos específicos del segundo archivo */
+body, html {
+    height: 100%;
+}
+
+.perfil-foto {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%; /* Hace la imagen circular */
+    display: block;
+    margin-bottom: 10px;
+}
+
+#galeria {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#galeria .image-container {
+    flex: 1 1 calc(33.333% - 20px); /* Ajusta para tres columnas, contando el espacio */
+    max-width: calc(33.333% - 20px); /* Ajusta el tamaño máximo para tres columnas */
+    margin-bottom: 20px; /* Espacio entre filas */
+    box-sizing: border-box;
+}
+
+#galeria .image-container img.galeria-img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1/1;
+    object-fit: cover; /* Asegura que la imagen cubra el área sin deformarse */
+}
+
+/* Estilo para el botón "Eliminar" */
+#galeria .image-container .delete-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.7); /* Fondo blanco semi-transparente */
+    border: none;
+    border-radius: 50%;
+    padding: 5px;
+    display: none;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+    opacity: 0; /* Comienza transparente */
+}
+
+#galeria .image-container:hover .delete-btn {
+    display: block;
+    opacity: 1;
+}
+
+.datos {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stat-line {
+    display: flex;  /* Asegura que los elementos estén en línea */
+    align-items: center; /* Alinea verticalmente los elementos al centro */
+    justify-content: center; /* Alinea horizontalmente los elementos al centro, opcional si prefieres otra alineación */
+    gap: 20px;  /* Espacio entre cada elemento */
+}
+
+.stat-line p {
+    margin: 0; /* Elimina cualquier margen predeterminado */
+    padding: 5px 10px; /* Agrega un poco de padding para un mejor espaciamiento visual */
+    background-color: #f8f9fa; /* Un suave color de fondo, opcional */
+    border-radius: 5px; /* Bordes redondeados para un aspecto más suave, opcional */
+}
+
+h3.text-center {
+    margin-bottom: 20px; /* Espacio antes de la galería */
+    color: #333; /* Color del texto */
+    font-weight: 600; /* Hacer el texto un poco más grueso */
+}
+
+/* Centrar el botón debajo de la imagen */
+#imageModal .btn {
+    display: block;
+    margin: 20px auto; /* Centrar el botón */
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+/* Ajustar el tamaño del ícono */
+#imageModal .btn img {
+    width: 30px; /* Ancho del ícono */
+    height: 30px; /* Alto del ícono */
+}
+
+/* Estilo para el modal de subida de imagen */
+#uploadModal .modal-dialog {
+    max-width: 500px; /* Ajusta el tamaño del modal según sea necesario */
+}
+
+#uploadModal .modal-header {
+    border-bottom: 1px solid #dee2e6; /* Añade una línea inferior al encabezado */
+}
+
+#uploadModal .modal-body {
+    padding: 20px; /* Añade padding a la caja del cuerpo del modal */
+}
+
+#uploadModal .form-label {
+    font-weight: bold; /* Hace que las etiquetas del formulario se vean más destacadas */
+}
+
+#uploadModal .form-control {
+    margin-bottom: 15px; /* Añade un margen inferior a los campos del formulario */
+}
+
+#uploadModal .modal-footer {
+    border-top: 1px solid #dee2e6; /* Añade una línea superior al pie del modal */
+    display: flex;
+    justify-content: flex-end; /* Alinea los botones al final */
+}
+
+#uploadModal .btn {
+    padding: 10px 20px; /* Añade padding a los botones */
+}
+.comments-container {
+    position: relative;
+    max-height: 150px;
+    overflow-y: auto;
+    padding-bottom: 40px; /* Espacio para el botón */
+    margin-bottom: 10px;
+}
+
+.comments-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px; /* Altura del gradiente */
+    background: linear-gradient(to top, white, rgba(255, 255, 255, 0));
+    pointer-events: none;
+}
+
+/* Estilo para la barra de desplazamiento del contenedor de comentarios */
+.comments-container::-webkit-scrollbar {
+    width: 8px; /* Ancho de la barra de desplazamiento */
+}
+
+.comments-container::-webkit-scrollbar-thumb {
+    background-color: #569ce3; /* Color de la barra de desplazamiento */
+    border-radius: 4px; /* Bordes redondeados para la barra de desplazamiento */
+}

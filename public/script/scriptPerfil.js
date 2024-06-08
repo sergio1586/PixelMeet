@@ -139,11 +139,13 @@ function cargarPublicacionesUsuario() {
                         });
 
                         var commentsContainer = $('<div>', {
-                            'class': 'comments-container'
+                            'class': 'comments-container',
+                            'id': 'comments-container',
+                            'style': publicacion.comentarios.length > 5 ? 'max-height: 150px; overflow-y: auto;' : ''
                         });
 
-                        // Mostrar solo los dos primeros comentarios en la página principal
-                        var comentariosMostrados = publicacion.comentarios.slice(0, 2);
+                        // Mostrar solo los primeros comentarios en la página principal
+                        var comentariosMostrados = publicacion.comentarios.slice(0, 5);
                         $.each(comentariosMostrados, function(index, comentario) {
                             var commentElement = $('<div>', {
                                 'class': 'comment',
@@ -152,11 +154,11 @@ function cargarPublicacionesUsuario() {
                             commentsContainer.append(commentElement);
                         });
 
-                        // Si hay más de dos comentarios, añadir botón "Ver más"
-                        if (publicacion.comentarios.length > 2) {
+                        // Si hay más de cinco comentarios, añadir botón "Ver más"
+                        if (publicacion.comentarios.length > 5) {
                             var verMasButton = $('<button>', {
                                 'class': 'ver-mas-button',
-                                'text': 'Ver más',
+                                'text': 'Ver más comentarios',
                                 'click': function() {
                                     $('#modalImage').attr('src', `/${publicacion.imagePath}`).data('publicacion-id', publicacion._id);
                                     $('#modalUserProfilePic').attr('src', `/${publicacion.imagenPerfil}`);
@@ -243,7 +245,6 @@ function cargarPublicacionesUsuario() {
     });
 }
 
-
 function addLike(publicacionId) {
     $.ajax({
         type: 'POST',
@@ -319,7 +320,6 @@ function subirImagen() {
     formData.append('descripcion', descripcion.value); 
     formData.append('categoria', categoriaInput.value);
 
-
     $.ajax({
         type: 'POST',
         url: '/upload',
@@ -341,7 +341,6 @@ function subirImagen() {
         }
     });
 }
-
 
 function eliminarFoto(photoId) {
     $.ajax({
@@ -389,12 +388,15 @@ function addComment(publicacionId, texto) {
             renderComment(publicacionId, comentario);
             $(`[data-publicacion-id="${publicacionId}"] .comment-box`).val('');
             $('#modalCommentBox').val('');
+            scrollToBottom();
+            scrollToBottomFeed();
         },
         error: function(error) {
             console.error('Error al añadir comentario:', error);
         }
     });
 }
+
 function renderComment(publicacionId, comentario) {
     var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
     var commentsContainer = publicacionContainer.find('.comments-container');
@@ -406,6 +408,11 @@ function renderComment(publicacionId, comentario) {
 
     commentsContainer.append(commentElement);
 
+    // Actualizar el estilo del contenedor de comentarios si hay más de 5 comentarios
+    if (commentsContainer.children('.comment').length > 5) {
+        commentsContainer.css({'max-height': '150px', 'overflow-y': 'auto'});
+    }
+
     if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
         var modalCommentsContainer = $('#modalComments');
 
@@ -415,6 +422,11 @@ function renderComment(publicacionId, comentario) {
         });
 
         modalCommentsContainer.append(modalCommentElement);
+
+        // Actualizar el estilo del contenedor de comentarios en el modal si hay más de 5 comentarios
+        if (modalCommentsContainer.children('.comment').length > 5) {
+            modalCommentsContainer.css({'max-height': '150px', 'overflow-y': 'auto'});
+        }
     }
 }
 function toggleLike(publicacionId) {
@@ -436,3 +448,12 @@ function toggleLike(publicacionId) {
         }
     });
 }
+function scrollToBottom() {
+    var commentsContainer = document.getElementById('modalComments');
+    commentsContainer.scrollTop = commentsContainer.scrollHeight;
+}
+function scrollToBottomFeed() {
+    var container = document.getElementById('comments-container');
+    container.scrollTop = container.scrollHeight;
+}
+

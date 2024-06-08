@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Error al cargar las etiquetas del usuario:', error);
     });
 });
+
 function cargarEtiquetasUsuario() {
     return new Promise((resolve, reject) => {
         $.ajax({
@@ -20,7 +21,7 @@ function cargarEtiquetasUsuario() {
                 reject(error);
             }
         });
-    });
+    }); 
 }
 
 function cargarFeed() {
@@ -118,16 +119,31 @@ function cargarFeed() {
                         });
 
                         var commentsContainer = $('<div>', {
-                            'class': 'comments-container'
+                            'class': 'comments-container',
+                            'id':'comments-container',
+                            'style': publicacion.comentarios.length > 5 ? 'max-height: 150px; overflow-y: auto;' : ''
                         });
 
-                        $.each(publicacion.comentarios, function(index, comentario) {
+                        var commentsToShow = publicacion.comentarios.slice(0, 5);
+                        $.each(commentsToShow, function(index, comentario) {
                             var commentElement = $('<div>', {
                                 'class': 'comment',
                                 'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
                             });
                             commentsContainer.append(commentElement);
                         });
+
+                        if (publicacion.comentarios.length > 5) {
+                            var verMasComentarios = $('<button>', {
+                                'text': 'Ver más comentarios',
+                                'class': 'ver-mas-button',
+                                'click': function(e) {
+                                    e.preventDefault();
+                                    cargarModal(publicacion); // Cargar el modal para mostrar todos los comentarios
+                                }
+                            });
+                            commentsContainer.append(verMasComentarios);
+                        }
 
                         var commentBox = $('<textarea>', {
                             'class': 'comment-box',
@@ -182,6 +198,7 @@ function cargarFeed() {
     });
 }
 
+
 function ordenarPublicaciones(publicaciones, userEtiquetas) {
     // Filtra y separa las publicaciones que coinciden con las etiquetas del usuario
     let preferidas = publicaciones.filter(pub => userEtiquetas.includes(pub.categoria));
@@ -203,6 +220,8 @@ function cargarModal(publicacion){
     var categoria = `<span class="categoria">#${publicacion.categoria}</span>`; // Añadir la categoría
     $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion} ${categoria}`);
     $('#modalComments').empty();
+    
+    // Cargar los comentarios desde la publicación ya cargada
     $.each(publicacion.comentarios, function(index, comentario) {
         var commentElement = $('<div>', {
             'class': 'comment',
@@ -210,6 +229,7 @@ function cargarModal(publicacion){
         });
         $('#modalComments').append(commentElement);
     });
+
     $('#modalCommentBox').val('');
     showLike(publicacion._id).then(likeButtonHtml => {
         $('#modalLikeButton').html(likeButtonHtml);
@@ -229,6 +249,7 @@ function cargarModal(publicacion){
 
     $('#imageModal').modal('show');
 }
+
 function toggleLike(publicacionId) {
     $.ajax({
         type: 'POST',
@@ -248,7 +269,6 @@ function toggleLike(publicacionId) {
         }
     });
 }
-
 
 function subirImagen() {
     const fileInput = document.getElementById('inputImagen');
@@ -292,63 +312,66 @@ function toggleDescription(descripcionDiv, verMasButton, shortText, fullText, is
     });
 }
 
-function addLike(publicacionId) {
+function addComment(publicacionId, texto) {
     $.ajax({
         type: 'POST',
-        url: '/me-gusta',
-        data: JSON.stringify({ publicacionId: publicacionId }),
+        url: '/comentario',
+        data: JSON.stringify({ publicacionId: publicacionId, texto: texto }),
         contentType: 'application/json',
         success: function(response) {
-            console.log(response); // Ver la respuesta del servidor
-            var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
-            var likeButton = publicacionContainer.find('.like-button');
-            //var likesLabel = publicacionContainer.find('.likes-label');
+            // Agregar el comentario al DOM
+            var comentario = {
+                usuario: response.usuario, // Asumiendo que el servidor devuelve el usuario
+                texto: texto,
+                fecha: new Date()
+            };
+            renderComment(publicacionId, comentario);
+            $(`[data-publicacion-id="${publicacionId}"] .comment-box`).val('');
+            $('#modalCommentBox').val('');
+            scrollToBottom();
             
-            // Actualizar el botón de "me gusta" en el feed
-            if (!response.status) {
-                likeButton.html('<img src="/images/me-gusta.png" alt="Me gusta">');
-            } else {
-                likeButton.html('<img src="/images/me-gusta2.png" alt="Me gusta">');
-            }
-
-            // Actualizar el conteo de "me gusta"
-            //likesLabel.text(`${response.likesCount} Me gusta`);
-
-            // Reasignar el evento de clic al botón de "me gusta" en el feed
-            likeButton.off('click').on('click', function() {
-                addLike(publicacionId);
-            });
-
-            // Actualizar el botón de "me gusta" en el modal si está visible
-            if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
-                var modalLikeButton = $('#modalLikeButton');
-                //var modalLikesLabel = $('#modalLikesLabel');
-
-                if (response.status) {
-                    modalLikeButton.html('<img src="/images/me-gusta.png" alt="Me gusta">');
-                } else {
-                    modalLikeButton.html('<img src="/images/me-gusta2.png" alt="Me gusta">');
-                }
-
-                //modalLikesLabel.text(`${response.likesCount} Me gusta`);
-
-                // Reasignar el evento de clic al botón de "me gusta" en el modal
-                modalLikeButton.off('click').on('click', function() {
-                    addLike(publicacionId);
-                });
-            }
+            scrollToBottomFeed();
         },
         error: function(error) {
-            console.error('Error al añadir "me gusta":', error);
+            console.error('Error al añadir comentario:', error);
         }
     });
 }
 
+function renderComment(publicacionId, comentario) {
+    // Actualizar comentarios en la página principal
+    var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
+    var commentsContainer = publicacionContainer.find('.comments-container');
 
+    var commentElement = $('<div>', {
+        'class': 'comment',
+        'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+    });
 
+    commentsContainer.append(commentElement);
 
+    // Actualizar el estilo del contenedor de comentarios si hay más de 5 comentarios
+    if (commentsContainer.children('.comment').length > 5) {
+        commentsContainer.css({'max-height': '150px', 'overflow-y': 'auto'});
+    }
 
+    // Actualizar comentarios en el modal si está visible
+    if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
+        var modalCommentsContainer = $('#modalComments');
 
+        var modalCommentElement = $('<div>', {
+            'class': 'comment',
+            'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+        });
+
+        modalCommentsContainer.append(modalCommentElement);
+
+        // Actualizar el estilo del contenedor de comentarios en el modal si hay más de 5 comentarios
+        if (modalCommentsContainer.children('.comment').length > 5) {
+            modalCommentsContainer.css({'max-height': '150px', 'overflow-y': 'auto'});
+        }
+    }
+}
 
 function showLike(publicacionId) {
     return new Promise((resolve, reject) => {
@@ -368,10 +391,7 @@ function showLike(publicacionId) {
                 // Actualizar el botón de "me gusta" en el feed
                 var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
                 var likeButton = publicacionContainer.find('.like-button');
-                //var likesLabel = publicacionContainer.find('.likes-label');
-
                 likeButton.html(likeButtonHtml);
-                //likesLabel.text(`${response.likesCount} Me gusta`);
 
                 likeButton.off('click').on('click', function() {
                     toggleLike(publicacionId);
@@ -380,11 +400,7 @@ function showLike(publicacionId) {
                 // Actualizar el botón de "me gusta" en el modal si está visible
                 if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
                     var modalLikeButton = $('#modalLikeButton');
-                    //var modalLikesLabel = $('#modalLikesLabel');
-
                     modalLikeButton.html(likeButtonHtml);
-                    //modalLikesLabel.text(`${response.likesCount} Me gusta`);
-
                     modalLikeButton.off('click').on('click', function() {
                         toggleLike(publicacionId);
                     });
@@ -399,59 +415,6 @@ function showLike(publicacionId) {
         });
     });
 }
-
-
-
-function addComment(publicacionId, texto) {
-    $.ajax({
-        type: 'POST',
-        url: '/comentario',
-        data: JSON.stringify({ publicacionId: publicacionId, texto: texto }),
-        contentType: 'application/json',
-        success: function(response) {
-            // Agregar el comentario al DOM
-            var comentario = {
-                usuario: response.usuario, // Asumiendo que el servidor devuelve el usuario
-                texto: texto,
-                fecha: new Date()
-            };
-            renderComment(publicacionId, comentario);
-            // Limpiar el textarea
-            $(`[data-publicacion-id="${publicacionId}"] .comment-box`).val('');
-            $('#modalCommentBox').val(''); // Limpiar la caja de comentarios en el modal
-        },
-        error: function(error) {
-            console.error('Error al añadir comentario:', error);
-        }
-    });
-}
-
-
-function renderComment(publicacionId, comentario) {
-    // Actualizar comentarios en la página principal
-    var publicacionContainer = $(`[data-publicacion-id="${publicacionId}"]`);
-    var commentsContainer = publicacionContainer.find('.comments-container');
-
-    var commentElement = $('<div>', {
-        'class': 'comment',
-        'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
-    });
-
-    commentsContainer.append(commentElement);
-
-    // Actualizar comentarios en el modal si está visible
-    if ($('#imageModal').hasClass('show') && $('#modalImage').data('publicacion-id') === publicacionId) {
-        var modalCommentsContainer = $('#modalComments');
-
-        var modalCommentElement = $('<div>', {
-            'class': 'comment',
-            'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
-        });
-
-        modalCommentsContainer.append(modalCommentElement);
-    }
-}
-
 
 function seguirUsuario(username) {
     $.ajax({
@@ -492,3 +455,13 @@ function dejarDeSeguirUsuario(username) {
         }
     });
 }
+
+function scrollToBottom() {
+    var commentsContainer = document.getElementById('modalComments');
+    commentsContainer.scrollTop = commentsContainer.scrollHeight;
+}
+function scrollToBottomFeed() {
+    var container = document.getElementById('comments-container');
+    container.scrollTop = container.scrollHeight;
+}
+
