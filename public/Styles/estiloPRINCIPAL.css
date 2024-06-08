@@ -564,3 +564,79 @@ h3.text-center {
 .ver-mas-button2:hover {
     color: rgba(0, 0, 0, 0.8); /* Color un poco más oscuro al pasar el ratón */
 }
+/* Media queries para hacer el diseño responsivo */
+
+/* Estilo para dispositivos móviles */
+@media (max-width: 767px) {
+    .menu-lateral {
+        width: 100%;
+        position: relative;
+        min-height: auto;
+    }
+
+    .contenido {
+        margin-left: 0;
+        width: 100%;
+        padding: 10px;
+    }
+
+    .galeria {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #galeria .image-container {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    .menu-lateral .nav-link {
+        justify-content: center;
+        padding: 15px;
+    }
+
+    #imageModal .modal-body {
+        flex-direction: column;
+    }
+
+    #imageModal .modal-body .col-md-8,
+    #imageModal .modal-body .col-md-4 {
+        max-height: none;
+        width: 100%;
+    }
+
+    #imageModal .modal-body .col-md-4 {
+        margin-top: 20px;
+    }
+}
+
+/* Estilo para tabletas */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .menu-lateral {
+        width: 200px;
+    }
+
+    .contenido {
+        margin-left: 220px;
+        width: calc(100% - 220px);
+    }
+
+    #galeria .image-container {
+        flex: 1 1 calc(50% - 10px);
+        max-width: calc(50% - 10px);
+    }
+
+    #imageModal .modal-body {
+        flex-direction: column;
+    }
+
+    #imageModal .modal-body .col-md-8,
+    #imageModal .modal-body .col-md-4 {
+        max-height: none;
+        width: 100%;
+    }
+
+    #imageModal .modal-body .col-md-4 {
+        margin-top: 20px;
+    }
+}
