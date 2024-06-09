@@ -205,7 +205,7 @@ app.get('/perfil', auth, async (req, res) => {
             planDescargas: usuario.planDescargas
             
         });
-        console.log(usuario.planDescargas);
+        
     } catch (error) {
         console.error('Error al obtener el perfil del usuario:', error);
         res.status(500).json({ message: 'Error del servidor' });

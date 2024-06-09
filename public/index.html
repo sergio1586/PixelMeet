@@ -5,31 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bienvenido a PixelMeet</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
-<link rel="stylesheet" href="Styles/estiloInicioRegistro.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+<link rel="stylesheet" href="Styles/estiloInicioPrincipal.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="script/script_login.js"></script>
 </head>
 <body>
-<div class="container">
-    <div class="left-section">
-    <h1>Bienvenido a PixelMeet</h1>
-    <p>PixelMeet es una plataforma para compartir tus fotografías con amigos y familiares.</p>
-    </div>
-    <div class="right-section">
-    <div class="form">
-        <h2>Iniciar Sesión</h2>
-        <div class="form-group">
-        <label for="usuario">Usuario:</label>
-        <input type="text" id="usuario" name="usuario" required>
-        </div>
-        <div class="form-group">
-        <label for="contraseña">Contraseña:</label>
-        <input type="password" id="contraseña" name="contraseña" required>
-        </div>
-        <button type="button" onclick="iniciarSesion()">Iniciar Sesión</button>
-    </div>
-    <p>¿No tienes una cuenta? <a href="/registro">Regístrate</a></p>
+<div class="login-container">
+    <div class="login-box">
+        <img src="images/logo.png" alt="PixelMeet Logo" class="logo">
+        <h1>Bienvenido a PixelMeet</h1>
+        <form class="form">
+            <div class="form-group">
+                <label for="usuario">Usuario:</label>
+                <input type="text" id="usuario" name="usuario" required>
+            </div>
+            <div class="form-group">
+                <label for="contraseña">Contraseña:</label>
+                <input type="password" id="contraseña" name="contraseña" required>
+            </div>
+            <button type="button" onclick="iniciarSesion()">Iniciar Sesión</button>
+        </form>
+        <p>¿No tienes una cuenta? <a href="/registro">Regístrate</a></p>
     </div>
 </div>
 </body>
