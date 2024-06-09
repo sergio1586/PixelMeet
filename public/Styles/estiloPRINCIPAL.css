@@ -637,17 +637,30 @@ h3.text-center {
 
 /* Estilo para dispositivos móviles */
 /* Responsive adjustments for mobile devices */
+/* Media queries para hacer el diseño responsivo */
+
+/* Estilo para dispositivos móviles */
+/* Estilo para dispositivos móviles */
 @media (max-width: 767px) {
     .menu-lateral {
-        width: 60px !important;
+        width: 100% !important;
+        height: auto !important;
         position: fixed !important;
-        min-height: 100vh !important;
+        min-height: 1vh !important;
+        top: 0 !important;
+        left: 0 !important;
         z-index: 1 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        padding: 10px 0 !important;
     }
 
     .contenido {
-        margin-left: 60px !important;
-        width: calc(100% - 60px) !important;
+        margin-top: 60px !important;
+        margin-left: 0 !important;
+        width: 100% !important;
         padding: 10px !important;
     }
 
@@ -663,7 +676,7 @@ h3.text-center {
 
     .menu-lateral .nav-link {
         justify-content: center !important;
-        padding: 15px !important;
+        padding: 10px !important;
     }
 
     #imageModal .modal-body {
@@ -684,12 +697,25 @@ h3.text-center {
 /* Responsive adjustments for tablets */
 @media (min-width: 768px) and (max-width: 1023px) {
     .menu-lateral {
-        width: 200px !important;
+        width: 100% !important;
+        height: auto !important;
+        position: fixed !important;
+        min-height: 1vh !important;
+        top: 0 !important;
+        left: 0 !important;
+        z-index: 1 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        padding: 10px 0 !important;
     }
 
     .contenido {
-        margin-left: 200px !important;
-        width: calc(100% - 200px) !important;
+        margin-top: 60px !important;
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 20px !important;
     }
 
     #galeria .image-container {
@@ -710,8 +736,8 @@ h3.text-center {
     #imageModal .modal-body .col-md-4 {
         margin-top: 20px !important;
     }
-    
 }
+
 
 
 /* Estilos para el modal */
