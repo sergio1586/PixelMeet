@@ -81,7 +81,7 @@ function cargarPerfilUsuario(username) {
         },
         error: function (error) {
             console.error('Error al cargar el perfil del usuario:', error);
-        }
+        } 
     });
 }
 

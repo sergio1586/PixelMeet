@@ -5,7 +5,21 @@ body {
     background-color: #fafafa;
     margin: 0;
     padding: 0;
+    background-image: url('../images/fondo2.webp'); /* Asegúrate de reemplazar 'ruta-de-tu-imagen.png' con la ruta correcta */
+    background-repeat: repeat;
+    background-size: cover; /* Ajusta el tamaño del fondo */
 }
+.d-flex.stat-line p {
+    color: #333 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+    font-family: 'Arial', sans-serif !important;
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    padding: 5px 10px !important;
+    border-radius: 5px !important;
+    
+    backdrop-filter: blur(5px) !important;
+}
+
 
 /* Estilo para la barra de desplazamiento de la página principal */
 body::-webkit-scrollbar { 
@@ -16,10 +30,36 @@ body::-webkit-scrollbar-thumb {
     background-color: #569ce3; /* Color de la barra de desplazamiento */
     border-radius: 4px; /* Bordes redondeados para la barra de desplazamiento */
 }
+h2 {
+    color: #333; /* Color oscuro para contrastar con el fondo claro */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Sombra para mejorar la legibilidad */
+    font-family: 'Arial', sans-serif; /* Fuente sans-serif para claridad */
+    background-color: rgba(255, 255, 255, 0.7); /* Fondo blanco semi-transparente para resaltar el texto */
+    padding: 5px 10px; /* Espaciado interno para mayor legibilidad */
+    border-radius: 5px; /* Bordes redondeados */
+    display: inline-block; /* Evitar que el fondo se extienda más allá del texto */
+    backdrop-filter: blur(5px); /* Desenfoque para fondo */
+}
+
+h3 {
+    color: #333; /* Color oscuro para contrastar con el fondo claro */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Sombra para mejorar la legibilidad */
+    font-family: 'Arial', sans-serif; /* Fuente sans-serif para claridad */
+    background-color: rgba(255, 255, 255, 0.7); /* Fondo blanco semi-transparente para resaltar el texto */
+    padding: 5px 10px; /* Espaciado interno para mayor legibilidad */
+    border-radius: 5px; /* Bordes redondeados */
+    display: inline-block; /* Evitar que el fondo se extienda más allá del texto */
+    backdrop-filter: blur(5px); /* Desenfoque para fondo */
+    text-align: center; /* Centrar el texto */
+    width: 100%; /* Asegura que el elemento se centre correctamente */
+    box-sizing: border-box; /* Incluye padding y border en el ancho total */
+}
+
 
 .menu-lateral {
-    background-color: #9bc7f3;
-    color: white;
+    background-color: rgba(255, 255, 255, 0.2); /* Fondo blanco muy transparente */
+    backdrop-filter: blur(10px); /* Efecto de desenfoque */
+    border-right: 1px solid rgba(255, 255, 255, 0.3); /* Borde derecho semi-transparente */
     padding: 20px;
     min-height: 100vh; 
     position: fixed;
@@ -29,6 +69,8 @@ body::-webkit-scrollbar-thumb {
     flex-direction: column;
     align-items: center;
 }
+
+
 
 .menu-lateral .nav-link {
     display: flex;
@@ -41,7 +83,7 @@ body::-webkit-scrollbar-thumb {
 }
 
 .menu-lateral .nav-link:hover {
-    background-color:#4b9ff2;
+    background-color:#f3d462;
 }
 
 .icono-nav {
@@ -68,17 +110,18 @@ body::-webkit-scrollbar-thumb {
     margin: 10px 0;
     width: 100%;
     max-width: 600px;
-    border: 1px solid #dbdbdb;
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Borde semi-transparente */
     border-radius: 3px;
     overflow: hidden;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.6) !important; /* Fondo blanco muy transparente con !important */
+    backdrop-filter: blur(10px) !important; /* Efecto de desenfoque con !important */
 }
+
 
 .image-container img.feed-img {
     width: 100%;
     height: auto;
 }
-
 
 .user-profile-pic {
     margin-top: 5px;
@@ -98,7 +141,7 @@ body::-webkit-scrollbar-thumb {
 }
 
 .user-label a {
-    color: #1E90FF; /* Azul clarito */
+    color: #007bff; /* Azul clarito */
     text-decoration: none; /* Quitar subrayado */
     font-weight: bold; /* Negrita para destacar */
 }
@@ -106,9 +149,6 @@ body::-webkit-scrollbar-thumb {
 .user-label a:hover {
     text-decoration: underline; /* Subrayado al pasar el cursor */
 }
-
-
-
 
 .modal-body {
     padding: 0;
@@ -186,28 +226,30 @@ body::-webkit-scrollbar-thumb {
 .descripcion.collapsed {
     max-height: 3em; /* Ajusta esta altura según tus necesidades */
 }
-
 .ver-mas-button {
     display: block;
     margin: 20px auto;
-    padding: 10px 30px;
-    background-color: #56c0f0;
+    padding: 8px 20px;
+    background-color: rgba(210, 105, 30, 0.7); /* Naranja/marrón con transparencia */
     color: white;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.7); /* Borde blanco semi-transparente */
     border-radius: 5px;
     cursor: pointer;
     text-align: center;
-    font-size: 10px;
+    font-size: 14px;
     font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    backdrop-filter: blur(5px); /* Desenfoque de fondo */
 }
 
 .ver-mas-button:hover {
-    background-color: #4461ef;
+    background-color: rgba(139, 69, 19, 0.8); /* Más oscuro al pasar el ratón */
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
+
+
 
 .comment-container {
     display: flex;
@@ -219,11 +261,18 @@ body::-webkit-scrollbar-thumb {
     flex: 1;
     margin: -10px;
     border: none;
-    border-bottom: 1px solid #dbdbdb;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important; /* Borde semi-transparente */
     border-radius: 0;
     resize: none;
     font-size: 14px;
+    background-color: rgba(255, 255, 255, 0.7) !important; /* Fondo blanco con menos transparencia */
+    backdrop-filter: blur(5px) !important; /* Efecto de desenfoque */
+    padding: 5px; /* Espaciado interno */
+    color: #333 !important; /* Color del texto para asegurar legibilidad */
+    box-shadow: none !important; /* Eliminar sombras */
 }
+
+
 
 .comment-submit-button {
     background: none;
@@ -353,7 +402,6 @@ body::-webkit-scrollbar-thumb {
     background-color: white;
 }
 
-
 #imageModal .modal-body .col-md-4 #modalCommentInput .comment-box {
     flex: 1;
     border: 1px solid #dbdbdb;
@@ -404,8 +452,6 @@ body::-webkit-scrollbar-thumb {
     display: block; /* Asegurar que la imagen se muestre */
 }
 
-
-
 .categoria {
     color: #007bff;
     font-weight: bold;
@@ -423,7 +469,7 @@ body, html {
     border-radius: 50%; /* Hace la imagen circular */
     display: block;
     margin-bottom: 10px;
-    object-fit: cover;
+    object-fit: cover
 }
 
 #galeria {
@@ -538,6 +584,7 @@ h3.text-center {
 #uploadModal .btn {
     padding: 10px 20px; /* Añade padding a los botones */
 }
+
 .comments-container {
     position: relative;
     max-height: 150px;
@@ -553,7 +600,7 @@ h3.text-center {
     left: 0;
     width: 100%;
     height: 40px; /* Altura del gradiente */
-    background: linear-gradient(to top, white, rgba(255, 255, 255, 0));
+    
     pointer-events: none;
 }
 
@@ -566,6 +613,7 @@ h3.text-center {
     background-color: #569ce3; /* Color de la barra de desplazamiento */
     border-radius: 4px; /* Bordes redondeados para la barra de desplazamiento */
 }
+
 .ver-mas-button2 {
     display: inline;
     margin-left: 5px;
@@ -584,19 +632,21 @@ h3.text-center {
 .ver-mas-button2:hover {
     color: rgba(0, 0, 0, 0.8); /* Color un poco más oscuro al pasar el ratón */
 }
+
 /* Media queries para hacer el diseño responsivo */
 
 /* Estilo para dispositivos móviles */
 @media (max-width: 767px) {
     .menu-lateral {
-        width: 100%;
-        position: relative;
-        min-height: auto;
+        width: 60px; /* Reduced width for smaller screens */
+        position: fixed; /* Keep it fixed while scrolling */
+        min-height: 100vh;
+        z-index: 1;
     }
 
     .contenido {
-        margin-left: 0;
-        width: 100%;
+        margin-left: 60px; /* Adjusted to match the width of the menu-lateral */
+        width: calc(100% - 60px);
         padding: 10px;
     }
 
@@ -630,15 +680,15 @@ h3.text-center {
     }
 }
 
-/* Estilo para tabletas */
+/* Responsive adjustments for tablets */
 @media (min-width: 768px) and (max-width: 1023px) {
     .menu-lateral {
         width: 200px;
     }
 
     .contenido {
-        margin-left: 220px;
-        width: calc(100% - 220px);
+        margin-left: 200px;
+        width: calc(100% - 200px);
     }
 
     #galeria .image-container {
@@ -660,6 +710,7 @@ h3.text-center {
         margin-top: 20px;
     }
 }
+
 /* Estilos para el modal */
 .user-profile-pic-modal {
     margin-top: 5px;
@@ -687,6 +738,7 @@ h3.text-center {
 .user-name-modal:hover {
     text-decoration: underline; /* Subrayado al pasar el cursor */
 }
+
 .delete-btn {
     position: absolute;
     top: 10px;
@@ -700,6 +752,7 @@ h3.text-center {
     width: 20px;
     height: 20px;
 }
+
 .follow-btn {
     padding: 5px 10px; /* Ajusta el tamaño del botón */
     font-size: 0.8rem; /* Tamaño de fuente más pequeño */
@@ -715,7 +768,6 @@ h3.text-center {
     width: 35px; /* Ajusta el tamaño del ícono */
     height: 35px; /* Ajusta el tamaño del ícono */
     margin-right: 5px; /* Espacio entre el ícono y el texto */
-    
 }
 
 .follow-btn:hover {
@@ -723,9 +775,9 @@ h3.text-center {
     transform: translateY(-2px); /* Efecto de elevar al pasar el ratón */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
 }
+
 /* Estilos para el botón de descarga en el modal */
 #imageModal .modal-body .download-button {
-   
     border: none;
     color: black;
     padding: 5px 10px;
