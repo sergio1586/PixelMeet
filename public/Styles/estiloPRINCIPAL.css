@@ -636,80 +636,83 @@ h3.text-center {
 /* Media queries para hacer el diseño responsivo */
 
 /* Estilo para dispositivos móviles */
+/* Responsive adjustments for mobile devices */
 @media (max-width: 767px) {
     .menu-lateral {
-        width: 60px; /* Reduced width for smaller screens */
-        position: fixed; /* Keep it fixed while scrolling */
-        min-height: 100vh;
-        z-index: 1;
+        width: 60px !important;
+        position: fixed !important;
+        min-height: 100vh !important;
+        z-index: 1 !important;
     }
 
     .contenido {
-        margin-left: 60px; /* Adjusted to match the width of the menu-lateral */
-        width: calc(100% - 60px);
-        padding: 10px;
+        margin-left: 60px !important;
+        width: calc(100% - 60px) !important;
+        padding: 10px !important;
     }
 
     .galeria {
-        flex-direction: column;
-        align-items: center;
+        flex-direction: column !important;
+        align-items: center !important;
     }
 
     #galeria .image-container {
-        flex: 1 1 100%;
-        max-width: 100%;
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
     }
 
     .menu-lateral .nav-link {
-        justify-content: center;
-        padding: 15px;
+        justify-content: center !important;
+        padding: 15px !important;
     }
 
     #imageModal .modal-body {
-        flex-direction: column;
+        flex-direction: column !important;
     }
 
     #imageModal .modal-body .col-md-8,
     #imageModal .modal-body .col-md-4 {
-        max-height: none;
-        width: 100%;
+        max-height: none !important;
+        width: 100% !important;
     }
 
     #imageModal .modal-body .col-md-4 {
-        margin-top: 20px;
+        margin-top: 20px !important;
     }
 }
 
 /* Responsive adjustments for tablets */
 @media (min-width: 768px) and (max-width: 1023px) {
     .menu-lateral {
-        width: 200px;
+        width: 200px !important;
     }
 
     .contenido {
-        margin-left: 200px;
-        width: calc(100% - 200px);
+        margin-left: 200px !important;
+        width: calc(100% - 200px) !important;
     }
 
     #galeria .image-container {
-        flex: 1 1 calc(50% - 10px);
-        max-width: calc(50% - 10px);
+        flex: 1 1 calc(50% - 10px) !important;
+        max-width: calc(50% - 10px) !important;
     }
 
     #imageModal .modal-body {
-        flex-direction: column;
+        flex-direction: column !important;
     }
 
     #imageModal .modal-body .col-md-8,
     #imageModal .modal-body .col-md-4 {
-        max-height: none;
-        width: 100%;
+        max-height: none !important;
+        width: 100% !important;
     }
 
     #imageModal .modal-body .col-md-4 {
-        margin-top: 20px;
+        margin-top: 20px !important;
     }
+    
 }
+
 
 /* Estilos para el modal */
 .user-profile-pic-modal {
