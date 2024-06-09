@@ -25,6 +25,9 @@ function cargarDatosUsuario() {
                     $(`.tag[data-tag=${etiqueta}]`).addClass('selected');
                 }
             }
+
+            // Seleccionar el plan de descargas actual
+            $('#planDescargas').val(response.planDescargas); // Asegúrate de que el valor del select es el correcto
         },
         error: function(error) {
             console.error('Error al cargar los datos del usuario:', error);
@@ -32,10 +35,13 @@ function cargarDatosUsuario() {
     });
 }
 
+
+
 function actualizarPerfil() {
     var nombre = $('#nombre').val();
     var apellidos = $('#apellidos').val();
     var fechaNacimiento = $('#fechaNacimiento').val();
+    var planDescargas = $('#planDescargas').val(); // Obtener el plan de descargas seleccionado
 
     var etiquetasSeleccionadas = {
         landscape: false,
@@ -53,38 +59,58 @@ function actualizarPerfil() {
     formData.append('nombre', nombre);
     formData.append('apellidos', apellidos);
     formData.append('fechaNacimiento', fechaNacimiento);
+    formData.append('planDescargas', planDescargas); // Añadir el plan de descargas al formData
     formData.append('etiquetas', JSON.stringify(etiquetasSeleccionadas));
     var imagenPerfil = $('#imagenPerfil')[0].files[0];
     if (imagenPerfil) {
         formData.append('imagenPerfil', imagenPerfil);
     }
 
-    $.ajax({
-        type: 'POST',
-        url: '/actualizar-perfil',
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: function(response) {
-            alert('Perfil actualizado correctamente');
-            window.location.replace('/home');
-        },
-        error: function(error) {
-            console.error('Error al actualizar el perfil:', error);
-            alert('Error al actualizar el perfil');
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¿Quieres actualizar tu perfil?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, actualizar',
+        cancelButtonText: 'No, cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                type: 'POST',
+                url: '/actualizar-perfil',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    Swal.fire(
+                        'Actualizado',
+                        'Tu perfil ha sido actualizado.',
+                        'success'
+                    ).then(() => {
+                        window.location.replace('/home');
+                    });
+                },
+                error: function(error) {
+                    console.error('Error al actualizar el perfil:', error);
+                    Swal.fire(
+                        'Error',
+                        'Hubo un problema al actualizar tu perfil.',
+                        'error'
+                    );
+                }
+            });
         }
     });
 }
+
 function subirImagen() {
     const fileInput = document.getElementById('inputImagen');
     const descripcion = document.getElementById('inputDescripcion');
-    //AÑADO CATEGORIA
     const categoriaInput = document.getElementById('categoria');
     const formData = new FormData();
     formData.append('imagen', fileInput.files[0]);
     formData.append('descripcion', descripcion.value); 
     formData.append('categoria', categoriaInput.value);
-
 
     $.ajax({
         type: 'POST',
@@ -107,6 +133,7 @@ function subirImagen() {
         }
     });
 }
+
 $(document).ready(function() {
     $('.tag').click(function() {
         $(this).toggleClass('selected');

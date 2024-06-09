@@ -120,12 +120,22 @@ app.get('/obtenerEtiquetasUsuario', auth, async (req, res) => {
 });
 app.get('/cargarFeed', auth, async (req, res) => {
     try {
-        const usuarios = await Usuario.find({}, 'publicaciones username').exec();
+        // Incluir imagenPerfil en la consulta
+        const usuarios = await Usuario.find({}, 'publicaciones username imagenPerfil').exec();
+        
         let publicaciones = [];
 
         usuarios.forEach(usuario => {
+            // Verificar y ajustar la ruta de la imagen de perfil
+            let imagenPerfilPublicacion = 'images/default-profile.png';
+            if (usuario.imagenPerfil) {
+                imagenPerfilPublicacion = usuario.imagenPerfil.replace(/^public[\\/]/, '').replace(/\\/g, '/');
+            }
+            //console.log(`Usuario: ${usuario.username}, Imagen de perfil: ${imagenPerfilPublicacion}`);
+
             usuario.publicaciones.forEach(publicacion => {
-                const imagePath = publicacion.imagePath.replace(/^public[\\/]/, '');
+                const imagePath = publicacion.imagePath.replace(/^public[\\/]/, '').replace(/\\/g, '/');
+
                 publicaciones.push({
                     _id: publicacion._id,
                     username: usuario.username,
@@ -133,8 +143,8 @@ app.get('/cargarFeed', auth, async (req, res) => {
                     meGustas: publicacion.meGustas,
                     comentarios: publicacion.comentarios,
                     descripcion: publicacion.descripcion,
-                    categoria: publicacion.categoria // Añadido el atributo descripción
-
+                    categoria: publicacion.categoria,
+                    imagenPerfilPublicacion: imagenPerfilPublicacion
                 });
             });
         });
@@ -145,6 +155,7 @@ app.get('/cargarFeed', auth, async (req, res) => {
         res.status(500).json({ error: 'Error del servidor' });
     }
 });
+
 
 //CREO QUE ESTO ES PARA LAS PUBLICACION EN EL PERFIL ASI QUE ALOMEJOR HAY QUE AÑADIR LA "DESCRIPCIÓN" DE LA FOTO.
 app.get('/publicaciones-usuario', auth, async (req, res) => {
@@ -190,8 +201,11 @@ app.get('/perfil', auth, async (req, res) => {
             seguidos: usuario.seguidos.length,
             publicaciones: usuario.publicaciones.length,
             imagenPerfil: usuario.imagenPerfil ? usuario.imagenPerfil.replace('public\\', '') : 'images/default-profile.png', // Ruta correcta para la imagen
-            etiquetas: usuario.etiquetas
+            etiquetas: usuario.etiquetas,
+            planDescargas: usuario.planDescargas
+            
         });
+        console.log(usuario.planDescargas);
     } catch (error) {
         console.error('Error al obtener el perfil del usuario:', error);
         res.status(500).json({ message: 'Error del servidor' });
@@ -218,7 +232,7 @@ app.get('/perfil-data/:username', auth, async (req, res) => {
         //ESTO ES LO QUE TENÍA YO
         //const imagenPerfil = usuario.imagenPerfil ? usuario.imagenPerfil.replace(/\\/g, '/').replace('public/', '') : 'images/default-profile.png';
         //ESTO LO TENÍAS TÚ, LO DEJO QUE A MI NO ME AFECTA CREO
-        const imagenPerfil = usuario.imagenPerfil ? '/'+usuario.imagenPerfil.replace('public\\', '') : 'images/default-profile.png';
+        //const imagenPerfil = usuario.imagenPerfil ? '/'+usuario.imagenPerfil.replace('public\\', '') : 'images/default-profile.png';
 
         res.status(200).json({
             nombre: usuario.nombre,
@@ -227,7 +241,7 @@ app.get('/perfil-data/:username', auth, async (req, res) => {
             seguidores: usuario.seguidores.length,
             seguidos: usuario.seguidos.length,
             publicaciones: usuario.publicaciones.length,
-            imagenPerfil: imagenPerfil // Ruta correcta para la imagen
+            imagenPerfil: usuario.imagenPerfil ? usuario.imagenPerfil.replace('public\\', '') : 'images/default-profile.png', // Ruta correcta para la imagen
         });
     } else {
         res.status(404).json({ message: 'Usuario no encontrado' });
@@ -254,12 +268,29 @@ app.get('/publicaciones-de-usuario/:username', auth, async (req, res) => {
         res.status(404).json({ message: 'Usuario no encontrado' });
     }
 });
+app.get('/obtenerComentarios/:publicacionId', auth, async (req, res) => {
+    try {
+        const { publicacionId } = req.params;
+        const usuario = await Usuario.findOne({ 'publicaciones._id': publicacionId }, { 'publicaciones.$': 1 });
+
+        if (!usuario) {
+            return res.status(404).json({ message: 'Publicación no encontrada' });
+        }
+
+        const publicacion = usuario.publicaciones.id(publicacionId);
+
+        res.status(200).json({ comentarios: publicacion.comentarios });
+    } catch (error) {
+        console.error('Error al obtener los comentarios:', error);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
+});
 
 //FUNCIONES POST
 
 app.post("/registrar", async function(req, res){
     console.log("Datos recibidos para registro: ", req.body);
-    if (!req.body.username || !req.body.password || !req.body.nombre || !req.body.apellidos || !req.body.fechaNacimiento || !req.body.etiquetas) {
+    if (!req.body.username || !req.body.password || !req.body.nombre || !req.body.apellidos || !req.body.fechaNacimiento || !req.body.etiquetas || !req.body.planDescargas) {
         res.send({"res":"register failed"});
     } else {
         try {
@@ -274,7 +305,9 @@ app.post("/registrar", async function(req, res){
                     username: req.body.username,
                     fechaNacimiento: req.body.fechaNacimiento,
                     password: req.body.password,
-                    etiquetas: req.body.etiquetas
+                    etiquetas: req.body.etiquetas,
+                    planDescargas: req.body.planDescargas,
+                    descargasRestantes: req.body.planDescargas === 1 ? 10 : req.body.planDescargas === 2 ? 25 : Infinity
                 });
                 await nuevoUsuario.save();
                 console.log("Nuevo usuario creado: ", nuevoUsuario);
@@ -286,6 +319,7 @@ app.post("/registrar", async function(req, res){
         }
     }
 });
+
 
 app.post("/identificar", async function(req, res){
     if (!req.body.username || !req.body.password) {
@@ -330,71 +364,9 @@ app.post('/upload', auth, upload.single('imagen'), async (req, res) => {
         res.status(500).json({ message: 'Error al subir la imagen' });
     }
 });
-// Ruta para seguir a un usuario
-app.post('/seguir', auth, async (req, res) => {
-    try {
-        const usuarioId = req.session.userId;
-        const seguirUsername = req.body.username; // Nombre de usuario a seguir
 
-        const usuario = await Usuario.findById(usuarioId);
-        const usuarioASeguir = await Usuario.findOne({ username: seguirUsername });
 
-        if (!usuarioASeguir) {
-            return res.status(404).json({ message: 'Usuario a seguir no encontrado' });
-        }
 
-        // Verificar si ya sigue al usuario
-        if (usuario.seguidos.includes(usuarioASeguir.username)) {
-            return res.status(400).json({ message: 'Ya sigues a este usuario' });
-        }
-
-        // Añadir el usuario a la lista de seguidos
-        usuario.seguidos.push(usuarioASeguir.username);
-        // Añadir este usuario a la lista de seguidores del usuario a seguir
-        usuarioASeguir.seguidores.push(usuario.username);
-
-        await usuario.save();
-        await usuarioASeguir.save();
-
-        res.status(200).json({ message: 'Usuario seguido correctamente' });
-    } catch (error) {
-        console.error('Error al seguir al usuario:', error);
-        res.status(500).json({ message: 'Error del servidor' });
-    }
-});
-
-// Ruta para dejar de seguir a un usuario
-app.post('/dejar-de-seguir', auth, async (req, res) => {
-    try {
-        const usuarioId = req.session.userId;
-        const dejarDeSeguirUsername = req.body.username; // Nombre de usuario a dejar de seguir
-
-        const usuario = await Usuario.findById(usuarioId);
-        const usuarioADejarDeSeguir = await Usuario.findOne({ username: dejarDeSeguirUsername });
-
-        if (!usuarioADejarDeSeguir) {
-            return res.status(404).json({ message: 'Usuario a dejar de seguir no encontrado' });
-        }
-
-        // Verificar si no sigue al usuario
-        if (!usuario.seguidos.includes(usuarioADejarDeSeguir.username)) {
-            return res.status(400).json({ message: 'No sigues a este usuario' });
-        }
-
-        // Eliminar el usuario de la lista de seguidos
-        usuario.seguidos = usuario.seguidos.filter(username => username !== usuarioADejarDeSeguir.username);
-        // Eliminar este usuario de la lista de seguidores del usuario a dejar de seguir
-        usuarioADejarDeSeguir.seguidores = usuarioADejarDeSeguir.seguidores.filter(username => username !== usuario.username);
-
-        await usuario.save();
-        await usuarioADejarDeSeguir.save();
-
-        res.status(200).json({ message: 'Usuario dejado de seguir correctamente' });
-    } catch (error) {
-        console.error('Error al dejar de seguir al usuario:', error);
-        res.status(500).json({ message: 'Error del servidor' });
-    }
-});
 // Ruta para añadir un comentario a una publicación
 app.post('/comentario', auth, async (req, res) => {
     try {
@@ -515,7 +487,7 @@ app.post('/me-gusta-o-no', auth, async (req, res) => {
 app.post('/actualizar-perfil', auth, upload.single('imagenPerfil'), async (req, res) => {
     try {
         const usuarioId = req.session.userId;
-        const { nombre, apellidos, fechaNacimiento, etiquetas } = req.body;
+        const { nombre, apellidos, fechaNacimiento, etiquetas, planDescargas } = req.body;
 
         const usuario = await Usuario.findById(usuarioId);
         if (!usuario) {
@@ -526,6 +498,8 @@ app.post('/actualizar-perfil', auth, upload.single('imagenPerfil'), async (req, 
         usuario.apellidos = apellidos;
         usuario.fechaNacimiento = new Date(fechaNacimiento);
         usuario.etiquetas = JSON.parse(etiquetas);
+        usuario.planDescargas = parseInt(planDescargas, 10); // Asegúrate de convertir a número entero
+        usuario.descargasRestantes = usuario.planDescargas === 1 ? 10 : usuario.planDescargas === 2 ? 25 : Infinity; // Actualiza las descargas restantes según el plan
 
         if (req.file) {
             const imagenPerfilPath = req.file.path;
@@ -539,6 +513,7 @@ app.post('/actualizar-perfil', auth, upload.single('imagenPerfil'), async (req, 
         res.status(500).json({ message: 'Error al actualizar el perfil' });
     }
 });
+
 //PETICIONES DE BORRAR
 app.delete('/delete-photo/:photoId', auth, async (req, res) => {
     try {
@@ -573,6 +548,182 @@ app.delete('/delete-photo/:photoId', auth, async (req, res) => {
         res.status(500).json({ message: 'Error al eliminar la foto' });
     }
 });
+// Ruta para verificar el estado de seguimiento
+app.get('/follow-status/:username', auth, async (req, res) => {
+    try {
+        const usuarioId = req.session.userId;
+        const username = req.params.username;
+
+        const usuario = await Usuario.findById(usuarioId);
+        const isFollowing = usuario.seguidos.includes(username);
+
+        res.status(200).json({ isFollowing: isFollowing });
+    } catch (error) {
+        console.error('Error al verificar el estado de seguimiento:', error);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
+});
+
+// Ruta para seguir a un usuario
+app.post('/seguir', auth, async (req, res) => {
+    try {
+        const usuarioId = req.session.userId;
+        const seguirUsername = req.body.username; // Nombre de usuario a seguir
+
+        const usuario = await Usuario.findById(usuarioId);
+        const usuarioASeguir = await Usuario.findOne({ username: seguirUsername });
+
+        if (!usuarioASeguir) {
+            return res.status(404).json({ message: 'Usuario a seguir no encontrado' });
+        }
+
+        // Verificar si ya sigue al usuario
+        if (usuario.seguidos.includes(usuarioASeguir.username)) {
+            return res.status(400).json({ message: 'Ya sigues a este usuario' });
+        }
+
+        // Añadir el usuario a la lista de seguidos
+        usuario.seguidos.push(usuarioASeguir.username);
+        // Añadir este usuario a la lista de seguidores del usuario a seguir
+        usuarioASeguir.seguidores.push(usuario.username);
+
+        await usuario.save();
+        await usuarioASeguir.save();
+
+        res.status(200).json({ message: 'Usuario seguido correctamente' });
+    } catch (error) {
+        console.error('Error al seguir al usuario:', error);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
+});
+
+// Ruta para dejar de seguir a un usuario
+app.post('/dejar-de-seguir', auth, async (req, res) => {
+    try {
+        const usuarioId = req.session.userId;
+        const dejarDeSeguirUsername = req.body.username; // Nombre de usuario a dejar de seguir
+
+        const usuario = await Usuario.findById(usuarioId);
+        const usuarioADejarDeSeguir = await Usuario.findOne({ username: dejarDeSeguirUsername });
+
+        if (!usuarioADejarDeSeguir) {
+            return res.status(404).json({ message: 'Usuario a dejar de seguir no encontrado' });
+        }
+
+        // Verificar si no sigue al usuario
+        if (!usuario.seguidos.includes(usuarioADejarDeSeguir.username)) {
+            return res.status(400).json({ message: 'No sigues a este usuario' });
+        }
+
+        // Eliminar el usuario de la lista de seguidos
+        usuario.seguidos = usuario.seguidos.filter(username => username !== usuarioADejarDeSeguir.username);
+        // Eliminar este usuario de la lista de seguidores del usuario a dejar de seguir
+        usuarioADejarDeSeguir.seguidores = usuarioADejarDeSeguir.seguidores.filter(username => username !== usuario.username);
+
+        await usuario.save();
+        await usuarioADejarDeSeguir.save();
+
+        res.status(200).json({ message: 'Usuario dejado de seguir correctamente' });
+    } catch (error) {
+        console.error('Error al dejar de seguir al usuario:', error);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
+});
+
+// Ruta para iniciar la descarga
+app.post('/iniciar-descarga', auth, async (req, res) => {
+    try {
+        const usuarioId = req.session.userId;
+        const usuario = await Usuario.findById(usuarioId);
+        const publicacionId = req.body.publicacionId;
+
+        if (!usuario) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        // Obtener la publicación a descargar
+        const usuarioPublicacion = await Usuario.findOne({ 'publicaciones._id': publicacionId }, { 'publicaciones.$': 1 });
+        if (!usuarioPublicacion) {
+            return res.status(404).json({ message: 'Publicación no encontrada' });
+        }
+
+        const publicacion = usuarioPublicacion.publicaciones.id(publicacionId);
+        const imagePath = publicacion.imagePath.replace(/^public[\\/]/, '').replace(/\\/g, '/');
+
+        if (usuario.planDescargas === 3) {
+            return res.json({ status: 'ok', downloadUrl: `/${imagePath}` });
+        }
+
+        if (usuario.descargasRestantes > 0) {
+            return res.json({
+                status: 'confirm',
+                message: `Te quedan ${usuario.descargasRestantes} descargas. ¿Deseas continuar?`
+            });
+        } else {
+            return res.json({
+                status: 'limit',
+                message: 'Has alcanzado el límite de descargas para hoy.'
+            });
+        }
+    } catch (error) {
+        console.error('Error al iniciar la descarga:', error);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
+});
+
+// Ruta para confirmar la descarga
+app.post('/confirmar-descarga', auth, async (req, res) => {
+    try {
+        const usuarioId = req.session.userId;
+        const usuario = await Usuario.findById(usuarioId);
+        const publicacionId = req.body.publicacionId;
+
+        if (!usuario) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        if (usuario.descargasRestantes <= 0 && usuario.planDescargas !== 3) {
+            return res.status(400).json({ message: 'Has alcanzado el límite de descargas para hoy.' });
+        }
+
+        // Obtener la publicación a descargar
+        const usuarioPublicacion = await Usuario.findOne({ 'publicaciones._id': publicacionId }, { 'publicaciones.$': 1 });
+        if (!usuarioPublicacion) {
+            return res.status(404).json({ message: 'Publicación no encontrada' });
+        }
+
+        const publicacion = usuarioPublicacion.publicaciones.id(publicacionId);
+        const imagePath = publicacion.imagePath.replace(/^public[\\/]/, '').replace(/\\/g, '/');
+
+        if (usuario.planDescargas !== 3) {
+            usuario.descargasRestantes -= 1;
+            await usuario.save();
+        }
+
+        res.json({ downloadUrl: `/${imagePath}` });
+    } catch (error) {
+        console.error('Error al confirmar la descarga:', error);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
+});
+
+// Función para reiniciar los contadores de descargas
+const reiniciarContadoresDescargas = async () => {
+    try {
+        const usuarios = await Usuario.find();
+        usuarios.forEach(async (usuario) => {
+            usuario.descargasRestantes = usuario.planDescargas === 1 ? 10 : usuario.planDescargas === 2 ? 25 : Infinity;
+            await usuario.save();
+        });
+        console.log('Contadores de descargas reiniciados.');
+    } catch (error) {
+        console.error('Error al reiniciar los contadores de descargas:', error);
+    }
+};
+
+// Ejecutar la función de reinicio cada 24 horas
+setInterval(reiniciarContadoresDescargas, 24 * 60 * 60 * 1000);
+
 
 conectarDB();
 server.listen(port, () => {

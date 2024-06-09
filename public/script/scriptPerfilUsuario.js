@@ -1,17 +1,62 @@
 document.addEventListener('DOMContentLoaded', function() {
     const username = profileUser; // Esta variable se establece en el servidor
 
-    console.log('Cargando perfil de usuario:', username); // Verifica que el usuario se está obteniendo
-
     cargarPerfilUsuario(username);
     cargarPublicacionesDeUsuario(username);
+    checkFollowStatus(username);
+    $('#followButton').on('click', function() {
+        toggleFollow(username);
+    });
 });
+
+function checkFollowStatus(username) {
+    $.ajax({
+        type: 'GET',
+        url: `/follow-status/${username}`,
+        success: function(response) {
+            updateFollowButton(response.isFollowing);
+        },
+        error: function(error) {
+            console.error('Error al verificar el estado de seguimiento:', error);
+        }
+    });
+}
+
+function updateFollowButton(isFollowing) {
+    const followIcon = $('#followIcon');
+    if (isFollowing) {
+        followIcon.attr('src', '/images/noseguir.png').attr('alt', 'Dejar de seguir');
+    } else {
+        followIcon.attr('src', '/images/seguir.png').attr('alt', 'Seguir');
+    }
+}
+
+function toggleFollow(username) {
+    const followIcon = $('#followIcon');
+    const action = followIcon.attr('alt') === 'Seguir' ? 'seguir' : 'dejar-de-seguir';
+    $.ajax({
+        type: 'POST',
+        url: `/${action}`,
+        data: JSON.stringify({ username: username }),
+        contentType: 'application/json',
+        success: function(response) {
+            checkFollowStatus(username);
+            cargarPerfilUsuario(username);
+            actualizarContadores(username); // Nueva función para actualizar los contadores
+        },
+        error: function(error) {
+            console.error('Error al cambiar el estado de seguimiento:', error);
+        }
+    });
+}
+
+
 
 function cargarPerfilUsuario(username) {
     $.ajax({
         type: 'GET',
         url: `/perfil-data/${username}`,
-        success: function (response) {
+        success: function(response) {
             console.log('Perfil data:', response); // Verifica los datos en la consola
             if (response) {
                 $('#nick_usuario').text(response.username);
@@ -19,7 +64,7 @@ function cargarPerfilUsuario(username) {
                 $('#seguidores').text(`${response.seguidores} seguidores`);
                 $('#seguidos').text(`${response.seguidos} seguidos`);
                 if (response.imagenPerfil) {
-                    $('#fotoperfil').attr('src', response.imagenPerfil);
+                    $('#fotoperfil').attr('src', `/${response.imagenPerfil}`);
                 } else {
                     $('#fotoperfil').attr('src', 'images/default-profile.png'); // Imagen de perfil predeterminada
                 }
@@ -27,8 +72,25 @@ function cargarPerfilUsuario(username) {
                 console.error('Error al cargar el perfil del usuario.');
             }
         },
-        error: function (error) {
+        error: function(error) {
             console.error('Error al cargar el perfil del usuario:', error);
+        }
+    });
+}
+function actualizarContadores(username) {
+    $.ajax({
+        type: 'GET',
+        url: `/perfil-data/${username}`,
+        success: function(response) {
+            if (response) {
+                $('#seguidores').text(`${response.seguidores} seguidores`);
+                $('#seguidos').text(`${response.seguidos} seguidos`);
+            } else {
+                console.error('Error al actualizar los contadores del perfil del usuario.');
+            }
+        },
+        error: function(error) {
+            console.error('Error al actualizar los contadores del perfil del usuario:', error);
         }
     });
 }
@@ -36,7 +98,7 @@ function cargarPerfilUsuario(username) {
 function cargarPublicacionesDeUsuario(username) {
     $.ajax({
         type: 'GET',
-        url: `/publicaciones-de-usuario/${username}`,
+        url: `/publicaciones-de-usuario/${username}`, 
         success: function (response) {
             console.log('Publicaciones data:', response);
             if (response && response.publicaciones && response.publicaciones.length > 0) {
@@ -58,14 +120,31 @@ function cargarPublicacionesDeUsuario(username) {
                             $('#modalUserProfileLink').attr('href', `/perfil/${publicacion.username}`).text(`@${publicacion.username}`);
                             $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion}`);
                             $('#modalComments').empty();
-                            $.each(publicacion.comentarios, function(index, comentario) {
-                                var commentElement = $('<div>', {
-                                    'class': 'comment',
-                                    'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
-                                });
-                                $('#modalComments').append(commentElement);
+                    
+                            // Cargar los comentarios más recientes desde el servidor
+                            $.ajax({
+                                type: 'GET',
+                                url: `/obtenerComentarios/${publicacion._id}`,
+                                success: function(response) {
+                                    if (response && response.comentarios) {
+                                        $.each(response.comentarios, function(index, comentario) {
+                                            var commentElement = $('<div>', {
+                                                'class': 'comment',
+                                                'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+                                            });
+                                            $('#modalComments').append(commentElement);
+                                        });
+                                        if ($('#modalComments').children('.comment').length > 5) {
+                                            $('#modalComments').css({'max-height': '150px', 'overflow-y': 'auto'});
+                                        }
+                                        scrollToBottom();
+                                    }
+                                },
+                                error: function(error) {
+                                    console.error('Error al obtener los comentarios:', error);
+                                }
                             });
-                            $('#modalCommentBox').val('');
+                    
                             showLike(publicacion._id).then(likeButtonHtml => {
                                 $('#modalLikeButton').html(likeButtonHtml);
                                 $('#modalLikeButton').off('click').on('click', function() {
@@ -73,6 +152,12 @@ function cargarPublicacionesDeUsuario(username) {
                                 });
                             });
 
+                            // Configuración del botón de descarga
+                            $('#modalDownloadButton').html('<img src="/images/descarga.png" alt="Descargar" />');
+                            $('#modalDownloadButton').off('click').on('click', function() {
+                                iniciarDescarga(publicacion._id);
+                            });
+                    
                             $('#modalCommentSubmitButton').off('click').on('click', function() {
                                 var comentarioTexto = $('#modalCommentBox').val();
                                 if (comentarioTexto) {
@@ -80,11 +165,11 @@ function cargarPublicacionesDeUsuario(username) {
                                     $('#modalCommentBox').val('');
                                 }
                             });
-
+                    
                             $('#imageModal').modal('show');
                         }
                     });
-
+                    
                     var likesLabel = $('<div>', {
                         'class': 'likes-label',
                         'text': `${publicacion.meGustas.length} Me gusta`
@@ -112,7 +197,7 @@ function cargarPublicacionesDeUsuario(username) {
 
                         var commentsContainer = $('<div>', {
                             'class': 'comments-container',
-                            'id': 'comments-container',
+                            'id': 'comments-container2',
                             'style': publicacion.comentarios.length > 5 ? 'max-height: 150px; overflow-y: auto;' : ''
                         });
 
@@ -218,6 +303,53 @@ function cargarPublicacionesDeUsuario(username) {
     });
 }
 
+
+// Función para iniciar la descarga
+function iniciarDescarga(publicacionId) {
+    $.ajax({
+        type: 'POST',
+        url: '/iniciar-descarga',
+        data: JSON.stringify({ publicacionId: publicacionId }),
+        contentType: 'application/json',
+        success: function(response) {
+            if (response.status === 'ok') {
+                window.location.href = response.downloadUrl; // Redirige para descargar la imagen
+            } else {
+                Swal.fire({
+                    title: 'Confirmación de Descarga',
+                    text: response.message,
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Descargar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        confirmarDescarga(publicacionId);
+                    }
+                });
+            }
+        },
+        error: function(error) {
+            console.error('Error al iniciar la descarga:', error);
+        }
+    });
+}
+
+// Función para confirmar la descarga
+function confirmarDescarga(publicacionId) {
+    $.ajax({
+        type: 'POST',
+        url: '/confirmar-descarga',
+        data: JSON.stringify({ publicacionId: publicacionId }),
+        contentType: 'application/json',
+        success: function(response) {
+            window.open(response.downloadUrl, '_blank'); // Redirige para descargar la imagen
+        },
+        error: function(error) {
+            console.error('Error al confirmar la descarga:', error);
+        }
+    });
+}
 function showLike(publicacionId) {
     return new Promise((resolve, reject) => {
         $.ajax({
@@ -343,7 +475,7 @@ function subirImagen() {
     const categoriaInput = document.getElementById('categoria');
     const formData = new FormData();
     formData.append('imagen', fileInput.files[0]);
-    formData.append('descripcion', descripcion.value); 
+    formData.append('descripcion', descripcion.value);
     formData.append('categoria', categoriaInput.value);
 
     $.ajax({
@@ -352,28 +484,40 @@ function subirImagen() {
         data: formData,
         contentType: false,
         processData: false,
-        success: function (response) {
-            console.log('Imagen subida correctamente');
-            console.log('Ruta de la imagen:', response.imagePath);
-            alert('Imagen subida correctamente');
-
-            // Cerrar el modal después de la subida exitosa
+        success: function(response) {
             $('#uploadModal').modal('hide');
-            cargarPublicacionesUsuario();
-            cargarPerfil(); // Actualizar datos del perfil después de subir la imagen
+            cargarPublicacionesDeUsuario(profileUser);
+            cargarPerfilUsuario(profileUser);
+            
+            // Mostrar modal de confirmación con SweetAlert
+            Swal.fire({
+                title: 'Imagen subida',
+                text: 'Tu imagen se ha subido correctamente.',
+                icon: 'success',
+                confirmButtonText: 'Aceptar'
+            });
         },
-        error: function (error) {
+        error: function(error) {
             console.error('Error al subir la imagen:', error);
+            // Mostrar modal de error con SweetAlert
+            Swal.fire({
+                title: 'Error',
+                text: 'Hubo un problema al subir la imagen.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
         }
     });
 }
+
+
 
 function scrollToBottom() {
     var commentsContainer = document.getElementById('modalComments');
     commentsContainer.scrollTop = commentsContainer.scrollHeight;
 }
 function scrollToBottomFeed() {
-    var container = document.getElementById('comments-container');
+    var container = document.getElementById('comments-container2');
     container.scrollTop = container.scrollHeight;
 }
 

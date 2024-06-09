@@ -9,9 +9,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof profileUser !== 'undefined') {
         cargarPerfilUsuario(profileUser); // Cargar datos del perfil de otro usuario
         cargarPublicacionesDeUsuario(profileUser); // Cargar publicaciones de otro usuario
+        actualizarContadores();
     }
 });
-
+$(document).ready(function() {
+    $('#confirmDeleteButton').on('click', function() {
+        var photoId = $('#confirmDeleteModal').data('photo-id');
+        eliminarFoto(photoId);
+        $('#confirmDeleteModal').modal('hide');
+    });
+});
 function cargarPerfil() {
     $.ajax({
         type: 'GET',
@@ -36,9 +43,25 @@ function cargarPerfil() {
         }
     });
 }
-
-function cargarPerfilUsuario(username) {
+function actualizarContadores() {
     $.ajax({
+        type: 'GET',
+        url: '/perfil',
+        success: function (response) {
+            if (response) {
+                $('#seguidores').text(`${response.seguidores} seguidores`);
+                $('#seguidos').text(`${response.seguidos} seguidos`);
+            } else {
+                console.error('Error al actualizar los contadores del perfil del usuario.');
+            }
+        },
+        error: function (error) {
+            console.error('Error al actualizar los contadores del perfil del usuario:', error);
+        }
+    });
+}
+function cargarPerfilUsuario(username) {
+    $.ajax({ 
         type: 'GET',
         url: `/perfil-data/${username}`,
         success: function (response) {
@@ -86,21 +109,38 @@ function cargarPublicacionesUsuario() {
                             $('#modalUserProfileLink').attr('href', `/perfil/${publicacion.username}`).text(`@${publicacion.username}`);
                             $('#modalDescription').html(`<strong>${publicacion.username}</strong> ${publicacion.descripcion}`);
                             $('#modalComments').empty();
-                            $.each(publicacion.comentarios, function(index, comentario) {
-                                var commentElement = $('<div>', {
-                                    'class': 'comment',
-                                    'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
-                                });
-                                $('#modalComments').append(commentElement);
+                    
+                            // Cargar los comentarios más recientes desde el servidor
+                            $.ajax({
+                                type: 'GET',
+                                url: `/obtenerComentarios/${publicacion._id}`,
+                                success: function(response) {
+                                    if (response && response.comentarios) {
+                                        $.each(response.comentarios, function(index, comentario) {
+                                            var commentElement = $('<div>', {
+                                                'class': 'comment',
+                                                'html': `<strong>${comentario.usuario}</strong> ${comentario.texto}`
+                                            });
+                                            $('#modalComments').append(commentElement);
+                                        });
+                                        if ($('#modalComments').children('.comment').length > 5) {
+                                            $('#modalComments').css({'max-height': '150px', 'overflow-y': 'auto'});
+                                        }
+                                        scrollToBottom();
+                                    }
+                                },
+                                error: function(error) {
+                                    console.error('Error al obtener los comentarios:', error);
+                                }
                             });
-                            $('#modalCommentBox').val('');
+                    
                             showLike(publicacion._id).then(likeButtonHtml => {
                                 $('#modalLikeButton').html(likeButtonHtml);
                                 $('#modalLikeButton').off('click').on('click', function() {
                                     toggleLike(publicacion._id);
                                 });
                             });
-
+                    
                             $('#modalCommentSubmitButton').off('click').on('click', function() {
                                 var comentarioTexto = $('#modalCommentBox').val();
                                 if (comentarioTexto) {
@@ -108,8 +148,34 @@ function cargarPublicacionesUsuario() {
                                     $('#modalCommentBox').val('');
                                 }
                             });
-
+                    
                             $('#imageModal').modal('show');
+                        }
+                    });
+
+                    // Botón de eliminar imagen
+                    var deleteButton = $('<button>', {
+                        'class': 'delete-btn',
+                        'html': '<img src="images/borrar.png" alt="Eliminar">',
+                        'click': function() {
+                            Swal.fire({
+                                title: '¿Estás seguro?',
+                                text: "¡No podrás revertir esto!",
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#3085d6',
+                                cancelButtonColor: '#d33',
+                                confirmButtonText: 'Sí, eliminarlo!'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    eliminarFoto(publicacion._id);
+                                    Swal.fire(
+                                        'Eliminado!',
+                                        'Tu imagen ha sido eliminada.',
+                                        'success'
+                                    )
+                                }
+                            });
                         }
                     });
 
@@ -140,7 +206,7 @@ function cargarPublicacionesUsuario() {
 
                         var commentsContainer = $('<div>', {
                             'class': 'comments-container',
-                            'id': 'comments-container',
+                            'id': 'comments-container2',
                             'style': publicacion.comentarios.length > 5 ? 'max-height: 150px; overflow-y: auto;' : ''
                         });
 
@@ -224,6 +290,7 @@ function cargarPublicacionesUsuario() {
                         commentContainer.append(commentBox).append(commentSubmitButton);
 
                         imgContainer.append(imgElement.addClass('galeria-img'))
+                            .append(deleteButton) // Añadir el botón de eliminar
                             .append(likesLabel)
                             .append(likeButton)
                             .append(commentButton)
@@ -309,15 +376,13 @@ function showLike(publicacionId) {
         });
     });
 }
-
 function subirImagen() {
     const fileInput = document.getElementById('inputImagen');
     const descripcion = document.getElementById('inputDescripcion');
-    //AÑADO CATEGORIA
     const categoriaInput = document.getElementById('categoria');
     const formData = new FormData();
     formData.append('imagen', fileInput.files[0]);
-    formData.append('descripcion', descripcion.value); 
+    formData.append('descripcion', descripcion.value);
     formData.append('categoria', categoriaInput.value);
 
     $.ajax({
@@ -326,21 +391,32 @@ function subirImagen() {
         data: formData,
         contentType: false,
         processData: false,
-        success: function (response) {
-            console.log('Imagen subida correctamente');
-            console.log('Ruta de la imagen:', response.imagePath);
-            alert('Imagen subida correctamente');
-
-            // Cerrar el modal después de la subida exitosa
+        success: function(response) {
             $('#uploadModal').modal('hide');
             cargarPublicacionesUsuario();
-            cargarPerfil(); // Actualizar datos del perfil después de subir la imagen
+            cargarPerfil();
+            
+            // Mostrar modal de confirmación con SweetAlert
+            Swal.fire({
+                title: 'Imagen subida',
+                text: 'Tu imagen se ha subido correctamente.',
+                icon: 'success',
+                confirmButtonText: 'Aceptar'
+            });
         },
-        error: function (error) {
+        error: function(error) {
             console.error('Error al subir la imagen:', error);
+            // Mostrar modal de error con SweetAlert
+            Swal.fire({
+                title: 'Error',
+                text: 'Hubo un problema al subir la imagen.',
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
         }
     });
 }
+
 
 function eliminarFoto(photoId) {
     $.ajax({
@@ -348,14 +424,20 @@ function eliminarFoto(photoId) {
         url: `/delete-photo/${photoId}`,
         success: function(response) {
             console.log(response.message);
+            // Eliminar el contenedor de la imagen eliminada del DOM
+            $(`[data-publicacion-id="${photoId}"]`).remove();
+            // Volver a cargar las publicaciones del usuario
             cargarPublicacionesUsuario();
-            cargarPerfil(); // Actualizar datos del perfil después de eliminar la imagen
+            // Actualizar el perfil del usuario
+            cargarPerfil();
         },
         error: function(error) {
             console.error('Error al eliminar la foto:', error);
         }
     });
 }
+
+
 
 function addLike(publicacionId) {
     $.ajax({
@@ -453,7 +535,7 @@ function scrollToBottom() {
     commentsContainer.scrollTop = commentsContainer.scrollHeight;
 }
 function scrollToBottomFeed() {
-    var container = document.getElementById('comments-container');
+    var container = document.getElementById('comments-container2');
     container.scrollTop = container.scrollHeight;
 }
 

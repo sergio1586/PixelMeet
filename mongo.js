@@ -32,7 +32,9 @@ const usuarioSchema = new mongoose.Schema({
     seguidos: { type: [String], default: [] },
     etiquetas: { type: Object, default: {} },
     imagenPerfil: String,
-    publicaciones: [publicacionSchema]
+    publicaciones: [publicacionSchema],
+    planDescargas: { type: Number, default: 1 }, // Nuevo atributo
+    descargasRestantes: { type: Number, default: 10 }
 });
 
 // Modelos basados en los esquemas

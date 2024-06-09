@@ -87,17 +87,14 @@ body {
     background-color: #0056b3;
   }
   /*Para la pagina de configuracion salga el menu lateral*/
-  .menu-lateral {
-    background-color: #343a40; /* Un color más moderno y neutral */
+.menu-lateral {
+    background-color: #9bc7f3;
     color: white;
     padding: 20px;
-    min-height: 100vh; /* Asegura que el menú cubra toda la altura */
-    width: 100px;
-    /* estas lineas para que el muno permanezca fijo en el lateral */
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-
+    min-height: 100vh; 
+    position: fixed;
+    top: 0;
+    left: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -114,7 +111,7 @@ body {
 }
 
 .menu-lateral .nav-link:hover {
-    background-color: #495057;
+    background-color:#4b9ff2;
 }
 
 .icono-nav {
